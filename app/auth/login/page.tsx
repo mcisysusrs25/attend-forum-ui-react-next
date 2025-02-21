@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const BASE_URL = 'http://localhost:5000/api';
 
@@ -61,6 +62,7 @@ const Login = () => {
             sessionStorage.setItem('userFullName', user.fullName);
             sessionStorage.setItem('userEmail', user.email);
             sessionStorage.setItem('userID', user.id);
+            sessionStorage.setItem('userType', user.userType);
 
             setMessage({ type: 'success', text: 'Login successful!' });
             
@@ -131,6 +133,9 @@ const Login = () => {
                     {message.text}
                 </p>
             )}
+            <Link href={'/auth/register'}>
+            <button className='mt-4 text-center p-3'>Student / Professor Create account</button>
+            </Link>
         </div>
     );
 };

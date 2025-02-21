@@ -1,11 +1,14 @@
 "use client"; // Ensures this component runs on the client side
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 // Define the base URL as a variable
 const BASE_URL = 'http://localhost:5000/api';
 
 const Register = () => {
+    const router = useRouter();
     const [role, setRole] = useState('student'); // Default to 'student'
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -82,6 +85,10 @@ const Register = () => {
     
             // Reset form fields
             resetFields();
+             // Add a small delay to ensure cookie is set before navigation
+             setTimeout(() => {
+                router.push('/dashboard');
+            }, 100);
         } catch (error) {
             console.error('Error during registration:', error);
             setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Failed to register. Please try again.' });
@@ -195,6 +202,10 @@ const Register = () => {
                     {message.text}
                 </p>
             )}
+
+<Link href={'/auth/login'}>
+            <button className='mt-4 text-center p-3'>Already have an account ? Login</button>
+            </Link>
         </div>
     );
 };

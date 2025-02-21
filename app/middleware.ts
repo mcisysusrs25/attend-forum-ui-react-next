@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
     // Check for auth token in cookie
     const authToken = request.cookies.get('authToken')?.value;
+    console.log("we got the auth token" + authToken)
     
     const currentPath = request.nextUrl.pathname;
     

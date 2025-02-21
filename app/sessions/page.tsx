@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { getUserId, getSessionAuthToken } from '../utils/authSession'
 
 interface Session {
   _id: string
@@ -24,70 +25,100 @@ export default function AttendancePage() {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<'active' | 'completed' | 'new'>('active')
 
-  // Check if the user is logged in
+  // Authentication check
   useEffect(() => {
-    const authToken = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('authToken='))
-      ?.split('=')[1]
-
+    const authToken = getSessionAuthToken();
     if (!authToken) {
-      router.push('/auth') // Redirect to /auth if not logged in
+      router.push('/auth/login');
+      return;
     }
-  }, [router])
 
-  // Fetch sessions only if the user is authenticated
-  useEffect(() => {
     const fetchSessions = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
+        const userID = getUserId();
+        if (!userID) {
+          throw new Error('User ID not found');
+        }
+
         const response = await fetch('http://localhost:5000/api/sessions/getSessionsbyProfessor', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
           },
-          body: JSON.stringify({ professorID: 'P54321' }),
-        })
+          body: JSON.stringify({ professorID: userID }),
+          // Add cache control headers
+          cache: 'no-store',
+        });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch sessions')
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to fetch sessions');
         }
 
-        const data = await response.json()
-        setSessions(data.data)
-        setFilteredSessions(data.data.filter((session: { sessionStatus: string }) => session.sessionStatus === 'active'))
+        const data = await response.json();
+        
+        if (!data || !Array.isArray(data.data)) {
+          throw new Error('Invalid response format');
+        }
+
+        setSessions(data.data);
+        // Initial filter application
+        setFilteredSessions(data.data.filter((session: { sessionStatus: string }) => session.sessionStatus === filter));
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
+        console.error('Fetch error:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    // Fetch sessions only if the user is authenticated
-    const authToken = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('authToken='))
-      ?.split('=')[1]
+    fetchSessions();
+  }, [filter, router]) // Added router to dependencies
 
-    if (authToken) {
-      fetchSessions()
-    }
-  }, [])
-
+  // Separate effect for filtering to avoid unnecessary API calls
   useEffect(() => {
-    setFilteredSessions(sessions.filter((session) => session.sessionStatus === filter))
-  }, [filter, sessions])
+    if (sessions.length > 0) {
+      setFilteredSessions(sessions.filter(session => session.sessionStatus === filter));
+    }
+  }, [filter, sessions]);
 
-  // Add click handler for the entire card
-  const handleCardClick = (sessionID: string) => {
-    router.push(`/sessions/${sessionID}`)
+  const handleCardClick = (sessionID: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    router.push(`/sessions/${sessionID}`);
   }
 
   if (loading) {
-    return <div className="text-center py-8">Loading sessions...</div>
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Loading sessions...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-center py-8 text-red-500">Error: {error}</div>
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-center py-8 text-red-500">
+          <p className="text-xl font-semibold mb-2">Error</p>
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -95,37 +126,27 @@ export default function AttendancePage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
         {/* Filter Buttons */}
         <div className="flex space-x-4 mb-6">
-          <button
-            onClick={() => setFilter('active')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              filter === 'active'
-                ? 'bg-green-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setFilter('completed')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              filter === 'completed'
-                ? 'bg-purple-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Completed
-          </button>
-          <button
-            onClick={() => setFilter('new')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              filter === 'new'
-                ? 'bg-yellow-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            New
-          </button>
+          {['active', 'completed', 'new'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilter(status as 'active' | 'completed' | 'new')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                filter === status
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </button>
+          ))}
         </div>
+
+        {/* No sessions message */}
+        {filteredSessions.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            No {filter} sessions found
+          </div>
+        )}
 
         {/* Session Cards */}
         <div className="space-y-4">
@@ -135,6 +156,7 @@ export default function AttendancePage() {
               onClick={() => handleCardClick(session.sessionID)}
               className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 border border-gray-100 cursor-pointer"
             >
+              {/* Rest of your card content remains the same */}
               <div className="flex justify-between items-start">
                 <div className="space-y-3 flex-1">
                   <h3 className="text-xl font-bold text-gray-900">
@@ -177,11 +199,10 @@ export default function AttendancePage() {
                     <span className="font-medium">Session ID:</span> {session.sessionID}
                   </p>
                 </div>
-                {/* See Details Button */}
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()  // Prevent card click from triggering
-                    handleCardClick(session.sessionID)
+                    e.stopPropagation();
+                    handleCardClick(session.sessionID);
                   }}
                   className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300"
                 >
