@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'  // Add this import
+import { useRouter } from 'next/navigation'
 
 interface Session {
   _id: string
@@ -24,6 +24,19 @@ export default function AttendancePage() {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<'active' | 'completed' | 'new'>('active')
 
+  // Check if the user is logged in
+  useEffect(() => {
+    const authToken = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('authToken='))
+      ?.split('=')[1]
+
+    if (!authToken) {
+      router.push('/auth') // Redirect to /auth if not logged in
+    }
+  }, [router])
+
+  // Fetch sessions only if the user is authenticated
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -49,7 +62,15 @@ export default function AttendancePage() {
       }
     }
 
-    fetchSessions()
+    // Fetch sessions only if the user is authenticated
+    const authToken = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('authToken='))
+      ?.split('=')[1]
+
+    if (authToken) {
+      fetchSessions()
+    }
   }, [])
 
   useEffect(() => {

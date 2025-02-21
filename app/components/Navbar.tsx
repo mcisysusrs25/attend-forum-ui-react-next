@@ -2,15 +2,12 @@
 
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-const user = {
-  name: 'Tom Cook',
-  email: 'tom@example.com',
-  imageUrl:
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-}
+// Navigation items
 const navigation = [
   { name: 'Dashboard', href: '/dashboard' },
   { name: 'My Sessions', href: '/sessions' },
@@ -18,19 +15,58 @@ const navigation = [
   { name: 'My Batches', href: '/batches' },
   { name: 'Settings', href: '/settings' },
 ]
-const userNavigation = [
-  { name: 'See Profile', href: '#' },
-  { name: 'Logout', href: '#' },
-]
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Example() {
+export default function Navbar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [user, setUser] = useState<{
+    fullName: string | null;
+    email: string | null;
+    userID: string | null;
+  }>({
+    fullName: null,
+    email: null,
+    userID: null
+  });
 
-  // Get the current page title based on the active navigation link
+  // Get user data from session storage on component mount
+  useEffect(() => {
+    const fullName = sessionStorage.getItem('userFullName');
+    const email = sessionStorage.getItem('userEmail');
+    const userID = sessionStorage.getItem('userID');
+    
+    if (fullName && email && userID) {
+      setUser({
+        fullName,
+        email,
+        userID
+      });
+    } else {
+      // Redirect to login if no session data
+      router.push('/auth');
+    }
+  }, [router]);
+
+  // Handle logout
+  const handleLogout = () => {
+    // Clear session storage
+    sessionStorage.clear();
+    // Clear the auth cookie
+    document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+    // Redirect to login
+    router.push('/auth/login');
+  };
+
+  const userNavigation = [
+    { name: 'See Profile', href: '/profile' },
+    { name: 'Logout', href: '#', onClick: handleLogout }
+  ]
+
+  // Get the current page title
   const currentPage = navigation.find((item) => pathname === item.href)?.name || 'Dashboard'
 
   return (
@@ -75,9 +111,11 @@ export default function Example() {
                   <div>
                     <MenuButton className="flex items-center max-w-xs rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
                       <span className="sr-only">Open user menu</span>
-                      <img alt="" src={user.imageUrl} className="size-8 rounded-full" />
+                      <div className="size-8 rounded-full bg-gray-600 flex items-center justify-center text-white">
+                        {user.fullName?.charAt(0).toUpperCase()}
+                      </div>
                       <div className="ml-2 flex flex-col items-start">
-                        <span className="text-sm text-white">{user.name}</span>
+                        <span className="text-sm text-white">{user.fullName}</span>
                         <span className="text-xs text-gray-400">{user.email}</span>
                       </div>
                     </MenuButton>
@@ -88,12 +126,21 @@ export default function Example() {
                   >
                     {userNavigation.map((item) => (
                       <MenuItem key={item.name}>
-                        <a
-                          href={item.href}
-                          className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
-                        >
-                          {item.name}
-                        </a>
+                        {item.onClick ? (
+                          <button
+                            onClick={item.onClick}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
+                          >
+                            {item.name}
+                          </button>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
+                          >
+                            {item.name}
+                          </Link>
+                        )}
                       </MenuItem>
                     ))}
                   </MenuItems>
@@ -136,10 +183,12 @@ export default function Example() {
           <div className="border-t border-gray-700 pt-4 pb-3">
             <div className="flex items-center px-5">
               <div className="shrink-0">
-                <img alt="" src={user.imageUrl} className="size-10 rounded-full" />
+                <div className="size-10 rounded-full bg-gray-600 flex items-center justify-center text-white text-lg">
+                  {user.fullName?.charAt(0).toUpperCase()}
+                </div>
               </div>
-              <div className="ml-3 flex flex-col items-start">
-                <div className="text-base/5 font-medium text-white">{user.name}</div>
+              <div className="ml-3">
+                <div className="text-base font-medium text-white">{user.fullName}</div>
                 <div className="text-sm font-medium text-gray-400">{user.email}</div>
               </div>
             </div>
@@ -147,9 +196,9 @@ export default function Example() {
               {userNavigation.map((item) => (
                 <DisclosureButton
                   key={item.name}
-                  as="a"
-                  href={item.href}
-                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  as="button"
+                  onClick={item.onClick}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                 >
                   {item.name}
                 </DisclosureButton>
