@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getUserId, getSessionAuthToken } from '../utils/authSession'
@@ -13,7 +12,7 @@ interface Session {
   sessionStatus: string
   subjectCode: string
   createdBy: string
-  sessionID: string
+  sessionID: string // Correct field to use
   __v: number
 }
 
@@ -27,70 +26,162 @@ export default function AttendancePage() {
 
   // Authentication check
   useEffect(() => {
-    const authToken = getSessionAuthToken();
+    const authToken = getSessionAuthToken()
     if (!authToken) {
-      router.push('/auth/login');
-      return;
+      router.push('/auth/login')
+      return
     }
 
     const fetchSessions = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        
-        const userID = getUserId();
+        setLoading(true)
+        setError(null)
+
+        const userID = getUserId()
         if (!userID) {
-          throw new Error('User ID not found');
+          throw new Error('User ID not found')
         }
 
         const response = await fetch('http://localhost:5000/api/sessions/getSessionsbyProfessor', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            Authorization: `Bearer ${authToken}`,
           },
           body: JSON.stringify({ professorID: userID }),
-          // Add cache control headers
           cache: 'no-store',
-        });
+        })
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Failed to fetch sessions');
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.message || 'Failed to fetch sessions')
         }
 
-        const data = await response.json();
-        
+        const data = await response.json()
+
         if (!data || !Array.isArray(data.data)) {
-          throw new Error('Invalid response format');
+          throw new Error('Invalid response format')
         }
 
-        setSessions(data.data);
-        // Initial filter application
-        setFilteredSessions(data.data.filter((session: { sessionStatus: string }) => session.sessionStatus === filter));
+        setSessions(data.data)
+        setFilteredSessions(data.data.filter((session: { sessionStatus: string }) => session.sessionStatus === filter))
       } catch (err) {
-        console.error('Fetch error:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Fetch error:', err)
+        setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchSessions();
-  }, [filter, router]) // Added router to dependencies
+    fetchSessions()
+  }, [filter, router])
 
-  // Separate effect for filtering to avoid unnecessary API calls
+  // Separate effect for filtering
   useEffect(() => {
     if (sessions.length > 0) {
-      setFilteredSessions(sessions.filter(session => session.sessionStatus === filter));
+      setFilteredSessions(sessions.filter((session) => session.sessionStatus === filter))
     }
-  }, [filter, sessions]);
+  }, [filter, sessions])
 
-  const handleCardClick = (sessionID: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
+  // Handle status change
+  const handleStatusChange = async (sessionID: string, newStatus: string) => {
+    try {
+      const authToken = getSessionAuthToken()
+      if (!authToken) {
+        router.push('/auth/login')
+        return
+      }
+
+      const response = await fetch(`http://localhost:5000/api/sessions/updateStatus/${sessionID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update status')
+      }
+
+      // Refresh the page to reflect changes
+      window.location.reload()
+    } catch (err) {
+      console.error('Status update error:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
     }
-    router.push(`/sessions/${sessionID}`);
+  }
+
+  // Handle toggle click
+  const handleToggleClick = (session: Session) => {
+    const newStatus = session.sessionStatus === 'active' ? 'completed' : 'active'
+    const action = session.sessionStatus === 'active' ? 'mark this session as completed' : 'activate this session'
+
+    // Confirmation using alert
+    const isConfirmed = window.confirm(`Are you sure you want to ${action}?`)
+    if (isConfirmed) {
+      handleStatusChange(session.sessionID, newStatus) // Use session.sessionID instead of session._id
+    }
+  }
+
+  // Handle delete click
+  const handleDeleteClick = async (session: Session) => {
+    const isConfirmed = window.confirm(
+      session.sessionStatus === 'active'
+        ? 'This session is active. Are you sure you want to delete it?'
+        : 'Are you sure you want to delete this session?'
+    )
+
+    if (isConfirmed) {
+      try {
+        const authToken = getSessionAuthToken()
+        if (!authToken) {
+          router.push('/auth/login')
+          return
+        }
+
+        const response = await fetch(`http://localhost:5000/api/sessions/delete/${session.sessionID}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to delete session')
+        }
+
+        // Refresh the page to reflect changes
+        window.location.reload()
+      } catch (err) {
+        console.error('Delete error:', err)
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      }
+    }
+  }
+
+  // Handle edit click
+  const handleEditClick = (sessionID: string) => {
+    router.push(`sessions/update-session/${sessionID}`)
+  }
+
+  // Get toggle label based on status
+  const getToggleLabel = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Mark as Completed'
+      case 'new':
+        return 'Activate Session'
+      default:
+        return 'Toggle Status'
+    }
+  }
+
+  // Handle see details click
+  const handleSeeDetailsClick = (sessionID: string) => {
+    router.push(`/sessions/${sessionID}`)
   }
 
   if (loading) {
@@ -101,7 +192,7 @@ export default function AttendancePage() {
           <p>Loading sessions...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -110,15 +201,15 @@ export default function AttendancePage() {
         <div className="text-center py-8 text-red-500">
           <p className="text-xl font-semibold mb-2">Error</p>
           <p>{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Retry
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -153,10 +244,8 @@ export default function AttendancePage() {
           {filteredSessions.map((session) => (
             <div
               key={session._id}
-              onClick={() => handleCardClick(session.sessionID)}
               className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 border border-gray-100 cursor-pointer"
             >
-              {/* Rest of your card content remains the same */}
               <div className="flex justify-between items-start">
                 <div className="space-y-3 flex-1">
                   <h3 className="text-xl font-bold text-gray-900">
@@ -199,15 +288,53 @@ export default function AttendancePage() {
                     <span className="font-medium">Session ID:</span> {session.sessionID}
                   </p>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCardClick(session.sessionID);
-                  }}
-                  className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300"
-                >
-                  See Details
-                </button>
+                <div className="flex flex-col space-y-2">
+                  {/* Edit Button (only for new sessions) */}
+                  {session.sessionStatus === 'new' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEditClick(session.sessionID)
+                      }}
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-300"
+                    >
+                      Edit
+                    </button>
+                  )}
+
+                  {/* Delete Button (for all sessions) */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDeleteClick(session)
+                    }}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300"
+                  >
+                    Delete
+                  </button>
+
+                  {/* Toggle Status Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleToggleClick(session)
+                    }}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300"
+                  >
+                    {getToggleLabel(session.sessionStatus)}
+                  </button>
+
+                  {/* See Details Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleSeeDetailsClick(session.sessionID)
+                    }}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300"
+                  >
+                    See Details
+                  </button>
+                </div>
               </div>
             </div>
           ))}

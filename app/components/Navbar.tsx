@@ -153,11 +153,18 @@ export default function Navbar() {
 
           {/* Conditionally add an "Add" button for My Sessions, My Subjects, My Batches */}
           {['My Sessions', 'My Subjects', 'My Batches'].includes(currentPage) && (
-            <Link href={`${pathname}/add-session`} className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Add {currentPage.split(' ')[1]}
-            </Link>
-          )}
+  <Link
+    href={{
+      'My Sessions': '/sessions/add-session',
+      'My Subjects': '/subjects/add-subject',
+      'My Batches': '/batches/add-batch'
+    }[currentPage] || '#'}
+    className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+  >
+    <PlusIcon className="h-5 w-5 mr-2" />
+    Add {currentPage.split(' ')[1]}
+  </Link>
+)}
         </div>
       </header>
 

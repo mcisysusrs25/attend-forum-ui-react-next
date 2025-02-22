@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
 
 interface Batch {
@@ -25,8 +25,29 @@ interface Subject {
   __v: number;
 }
 
-export default function AddSessionPage() {
+interface Session {
+  _id: string;
+  sessionTitle: string;
+  sessionDescription: string;
+  sessionValidFrom: string;
+  sessionValidTo: string;
+  sessionStatus: string;
+  subjectCode: string;
+  createdBy: string;
+  batchID: string;
+  students: {
+    studentID: string;
+    attendanceStatus: string;
+    _id: string;
+  }[];
+  sessionID: string;
+  sessionCreatedDateTime: string;
+  __v: number;
+}
+
+export default function UpdateSessionPage() {
   const router = useRouter();
+  const { sessionID } = useParams(); // Get sessionID from the URL
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [sessionValidFrom, setSessionValidFrom] = useState('');
@@ -38,14 +59,58 @@ export default function AddSessionPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Authentication check
-  useEffect(() => {
-    const authToken = getSessionAuthToken();
-    if (!authToken) {
-      console.log("No auth token found, redirecting to login");
-      router.push('/auth/login');
-    }
-  }, [router]);
+  // Fetch session details
+useEffect(() => {
+    const fetchSessionDetails = async () => {
+      const authToken = getSessionAuthToken();
+      if (!authToken) {
+        router.push('/auth/login');
+        return;
+      }
+  
+      try {
+        setLoading(true);
+        setError(null);
+  
+        const response = await fetch(`http://localhost:5000/api/sessions/gsd/${sessionID}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch session details');
+        }
+  
+        const data = await response.json();
+        const session: Session = data.data;
+  
+        // Format the date and time for datetime-local input
+        const formatDateTime = (dateTime: string) => {
+          const date = new Date(dateTime);
+          return date.toISOString().slice(0, 16); // Convert to "YYYY-MM-DDTHH:MM" format
+        };
+  
+        // Bind session details to the form fields
+        setSessionTitle(session.sessionTitle);
+        setSessionDescription(session.sessionDescription);
+        setSessionValidFrom(formatDateTime(session.sessionValidFrom)); // Format date and time
+        setSessionValidTo(formatDateTime(session.sessionValidTo)); // Format date and time
+        setSubjectCode(session.subjectCode);
+        setBatchID(session.batchID);
+      } catch (err) {
+        console.error('Error fetching session details:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchSessionDetails();
+  }, [sessionID, router]);
 
   // Fetch batches for the professor
   useEffect(() => {
@@ -64,7 +129,7 @@ export default function AddSessionPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Authorization': `Bearer ${authToken}`,
           },
           body: JSON.stringify({
             professorID: userID
@@ -104,7 +169,7 @@ export default function AddSessionPage() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Authorization': `Bearer ${authToken}`,
           },
         });
 
@@ -140,29 +205,29 @@ export default function AddSessionPage() {
     }
 
     try {
-      console.log("Sending request to add session with data:", {
+      console.log("Sending request to update session with data:", {
         sessionTitle,
         sessionDescription,
         sessionValidFrom,
         sessionValidTo,
-        subjectCode, // Include selected subjectCode
-        batchID, // Include selected batchID
+        subjectCode,
+        batchID,
         createdBy: userID
       });
 
-      const response = await fetch('http://localhost:5000/api/sessions/add', {
+      const response = await fetch(`http://localhost:5000/api/sessions/updateSession/${sessionID}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           sessionTitle,
           sessionDescription,
           sessionValidFrom,
           sessionValidTo,
-          subjectCode, // Include selected subjectCode
-          batchID, // Include selected batchID
+          subjectCode,
+          batchID,
           createdBy: userID
         }),
       });
@@ -172,14 +237,14 @@ export default function AddSessionPage() {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error response:", errorData);
-        throw new Error(errorData.message || 'Failed to add session');
+        throw new Error(errorData.message || 'Failed to update session');
       }
 
       // Redirect after successful submission
-      console.log("Session added successfully, redirecting to sessions");
+      console.log("Session updated successfully, redirecting to sessions");
       router.push('/sessions'); // Redirect to the session list or desired page
     } catch (err) {
-      console.error('Error adding session:', err);
+      console.error('Error updating session:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
@@ -191,7 +256,7 @@ export default function AddSessionPage() {
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Submitting session...</p>
+          <p>Loading session details...</p>
         </div>
       </div>
     );
@@ -200,7 +265,7 @@ export default function AddSessionPage() {
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-        <h2 className="text-2xl font-bold mb-4">Add New Session</h2>
+        <h2 className="text-2xl font-bold mb-4">Update Session</h2>
 
         {error && (
           <div className="mb-4 text-red-500">
@@ -292,7 +357,7 @@ export default function AddSessionPage() {
             type="submit"
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-300"
           >
-            Add Session
+            Update Session
           </button>
         </form>
       </div>
