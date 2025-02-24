@@ -28,7 +28,6 @@ export default function AttendancePage() {
   const [showQRModal, setShowQRModal] = useState(false)
   const [qrCodeDataUrl, setQRCodeDataUrl] = useState('') // Store the QR code as a Data URL
   const [showAttendanceModal, setShowAttendanceModal] = useState(false)
-  const [geolocation, setGeolocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [attendanceError, setAttendanceError] = useState<string | null>(null)
 
   const userType = getUserType() // Get the user type
@@ -67,7 +66,6 @@ export default function AttendancePage() {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords
-          setGeolocation({ latitude, longitude })
 
           // Call API to mark attendance
           const authToken = getSessionAuthToken()
@@ -127,7 +125,7 @@ export default function AttendancePage() {
         }
 
         let apiEndpoint = '';
-        let requestBody = {};
+        const requestBody = {};
 
         if (userType === "professor") {
           apiEndpoint = `http://localhost:5000/api/sessions/getSessionsbyProfessor/${userID}`;

@@ -2,6 +2,7 @@
 
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon, PlusIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -82,7 +83,7 @@ export default function Navbar() {
               <div className="flex h-16 items-center justify-between">
                 <div className="flex items-center">
                   <div className="shrink-0">
-                    <img alt="Your Company" src="/logo.png" className="size-8" />
+                    <Image alt="Your Company" src="/logo.png" className="size-8" />
                   </div>
                   <div className="hidden md:block">
                     <div className="ml-10 flex items-baseline space-x-4">
