@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getUserId, getSessionAuthToken, getUserType } from '../utils/authSession'
 import QRCode from 'qrcode' // Import the qrcode library
+import Image from 'next/image'
 
 interface Session {
   _id: string
@@ -115,6 +116,7 @@ export default function AttendancePage() {
       try {
         setLoading(true);
         setError(null);
+        console.log(error);
 
         const userID = getUserId();
         const userType = getUserType();
@@ -125,7 +127,6 @@ export default function AttendancePage() {
         }
 
         let apiEndpoint = '';
-        const requestBody = {};
 
         if (userType === "professor") {
           apiEndpoint = `http://localhost:5000/api/sessions/getSessionsbyProfessor/${userID}`;
@@ -543,7 +544,7 @@ export default function AttendancePage() {
               {/* QR Code Container */}
               <div className="flex justify-center">
                 <div className="bg-white p-4 rounded-xl shadow-inner border-2 border-dashed border-gray-200">
-                  <img
+                  <Image
                     src={qrCodeDataUrl}
                     alt="QR Code"
                     className="w-72 h-72 object-contain"

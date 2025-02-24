@@ -11,7 +11,6 @@ export default function AddSubjectPage() {
   const [description, setDescription] = useState('');
   const [creditHours, setCreditHours] = useState(0);
   const [subjectTerm, setSubjectTerm] = useState('');
-  const [professorID, setProfessorID] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
