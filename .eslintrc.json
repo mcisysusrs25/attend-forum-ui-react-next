@@ -7,7 +7,7 @@
       "plugin:@typescript-eslint/recommended"
     ],
     "rules": {
-      "@typescript-eslint/no-unused-vars": "off", // Change to "off" if you want to disable it completely
+      "@typescript-eslint/no-unused-vars": "warn", // Change to "off" if you want to disable it completely
       "@next/next/no-img-element": "warn" // Add this rule to handle the <img> warning
     }
   }

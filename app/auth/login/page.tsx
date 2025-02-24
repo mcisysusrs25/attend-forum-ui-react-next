@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, KeyRound, Mail } from 'lucide-react';
 
-const devUrl = process.env.NEXT_PUBLIC_DEV_URL; 
+const devUrl = "https://attend-forum-server-dev-1-0.onrender.com/api";
 
 console.log(devUrl);
 
