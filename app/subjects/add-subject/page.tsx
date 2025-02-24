@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
+import { getCurrentEnv } from '@/app/utils/nodeEnv';
 
 export default function AddSubjectPage() {
   const router = useRouter();
@@ -13,6 +14,9 @@ export default function AddSubjectPage() {
   const [subjectTerm, setSubjectTerm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const apiUrl = getCurrentEnv("dev");
+  console.log(apiUrl);
 
   // Authentication check
   useEffect(() => {
@@ -49,7 +53,7 @@ export default function AddSubjectPage() {
         professorID: userID, // Use the authenticated user's ID
       });
 
-      const response = await fetch('http://localhost:5000/api/subjects/add', {
+      const response = await fetch(`${apiUrl}/subjects/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

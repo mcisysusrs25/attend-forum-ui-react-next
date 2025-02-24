@@ -33,6 +33,9 @@ export default function AttendancePage() {
 
   const userType = getUserType() // Get the user type
 
+
+  const devUrl = "https://attend-forum-server-dev-1-0.onrender.com/api";
+const local_url = "http://localhost:5000/api";
   // Function to open QR modal and generate QR code
   const openQRModal = async (sessionID: string) => {
     const url = `http://localhost:3000/sessions/attendance/${sessionID}` // Dynamic URL
@@ -75,7 +78,7 @@ export default function AttendancePage() {
             return
           }
 
-          const response = await fetch(`http://localhost:5000/api/sessions/markAttendance/${sessionID}`, {
+          const response = await fetch(`${devUrl}${sessionID}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -129,9 +132,9 @@ export default function AttendancePage() {
         let apiEndpoint = '';
 
         if (userType === "professor") {
-          apiEndpoint = `http://localhost:5000/api/sessions/getSessionsbyProfessor/${userID}`;
+          apiEndpoint = `${devUrl}/sessions/getSessionsbyProfessor/${userID}`;
         } else if (userType === "student") {
-          apiEndpoint = `http://localhost:5000/api/sessions/getByStudentId/${userID}`;
+          apiEndpoint = `${devUrl}/sessions/getByStudentId/${userID}`;
         } else {
           throw new Error("Invalid user type");
         }
@@ -189,7 +192,7 @@ export default function AttendancePage() {
         return
       }
 
-      const response = await fetch(`http://localhost:5000/api/sessions/updateStatus/${sessionID}`, {
+      const response = await fetch(`${devUrl}/sessions/updateStatus/${sessionID}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -238,7 +241,7 @@ export default function AttendancePage() {
           return
         }
 
-        const response = await fetch(`http://localhost:5000/api/sessions/delete/${session.sessionID}`, {
+        const response = await fetch(`${devUrl}/sessions/delete/${session.sessionID}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',

@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, KeyRound, Mail } from 'lucide-react';
+import { getCurrentEnv } from '@/app/utils/nodeEnv';
 
-const devUrl = "https://attend-forum-server-dev-1-0.onrender.com/api";
-
-console.log(devUrl);
+const apiUrl = getCurrentEnv("local"); 
+console.log(apiUrl);
 
 const Login = () => {
     const router = useRouter();
@@ -33,12 +33,14 @@ const Login = () => {
             setMessage({ type: 'error', text: 'Please fill in all fields.' });
             return;
         }
-
+        
+        console.log(JSON.stringify(formData));
+        
         setLoading(true);
         setMessage(null);
 
         try {
-            const response = await fetch(`${devUrl}/auth/login`, {
+            const response = await fetch(`${apiUrl}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getSessionAuthToken } from '../../utils/authSession';
 import { Clock, Users, BookOpen, User, Calendar, Activity } from 'lucide-react';
+import { getCurrentEnv } from '@/app/utils/nodeEnv';
 
 interface Session {
   _id: string;
@@ -36,6 +37,10 @@ export default function SessionDetails() {
   const [showAttendancePanel, setShowAttendancePanel] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
+
+const apiUrl = getCurrentEnv("dev"); 
+console.log(apiUrl);
+
   useEffect(() => {
     if (!sessionId) return;
 
@@ -47,7 +52,7 @@ export default function SessionDetails() {
           return;
         }
 
-        const sessionResponse = await fetch(`http://localhost:5000/api/sessions/gsd/${sessionId}`, {
+        const sessionResponse = await fetch(`${apiUrl}${sessionId}`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
@@ -94,7 +99,7 @@ export default function SessionDetails() {
         })),
       };
 
-      const response = await fetch(`http://localhost:5000/api/sessions/attendence/add`, {
+      const response = await fetch(`${apiUrl}/sessions/attendence/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

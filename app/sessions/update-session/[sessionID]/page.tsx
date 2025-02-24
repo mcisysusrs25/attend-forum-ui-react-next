@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
+import { getCurrentEnv } from '@/app/utils/nodeEnv';
 
 interface Batch {
   _id: string;
@@ -59,6 +60,11 @@ export default function UpdateSessionPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+
+
+  const apiUrl = getCurrentEnv("dev"); 
+  console.log(apiUrl);
+
   // Fetch session details
 useEffect(() => {
     const fetchSessionDetails = async () => {
@@ -72,7 +78,7 @@ useEffect(() => {
         setLoading(true);
         setError(null);
   
-        const response = await fetch(`http://localhost:5000/api/sessions/gsd/${sessionID}`, {
+        const response = await fetch(`${apiUrl}/sessions/gsd/${sessionID}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -125,7 +131,7 @@ useEffect(() => {
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/batches/getBatchByProfessorId', {
+        const response = await fetch(`${apiUrl}/batches/getBatchByProfessorId`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -165,7 +171,7 @@ useEffect(() => {
       }
 
       try {
-        const response = await fetch(`http://localhost:5000/api/subjects/getsubjects/${userID}`, {
+        const response = await fetch(`${apiUrl}/subjects/getsubjects/${userID}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -215,7 +221,7 @@ useEffect(() => {
         createdBy: userID
       });
 
-      const response = await fetch(`http://localhost:5000/api/sessions/updateSession/${sessionID}`, {
+      const response = await fetch(`${apiUrl}/sessions/updateSession/${sessionID}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
+import { getCurrentEnv } from '../utils/nodeEnv';
 
 interface Subject {
   _id: string;
@@ -23,6 +24,10 @@ export default function SubjectsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+   const apiUrl = getCurrentEnv("dev");
+    console.log(apiUrl);
+  
+
   // Fetch subjects on component mount
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -39,7 +44,7 @@ export default function SubjectsPage() {
       }
 
       try {
-        const response = await fetch(`http://localhost:5000/api/subjects/getsubjects/${userID}`, {
+        const response = await fetch(`${apiUrl}/subjects/getsubjects/${userID}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -81,7 +86,7 @@ export default function SubjectsPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/subjects/delete/${subjectId}`, {
+      const response = await fetch(`${apiUrl}/subjects/delete/${subjectId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -1,11 +1,14 @@
 "use client"; // Ensures this component runs on the client side
 
+import { getCurrentEnv } from '@/app/utils/nodeEnv';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 // Define the base URL as a variable
-const BASE_URL = 'http://localhost:5000/api';
+const apiUrl = getCurrentEnv("dev"); 
+console.log(apiUrl);
+
 
 const Register = () => {
     const router = useRouter();
@@ -42,7 +45,7 @@ const Register = () => {
             console.log('Registration payload:', JSON.stringify(payload, null, 2));
     
             // Set the appropriate URL based on the role
-            const url = role === 'student' ? `${BASE_URL}/students/addSelf/register` : `${BASE_URL}/professor/add`;
+            const url = role === 'student' ? `${apiUrl}/students/addSelf/register` : `${apiUrl}/professor/add`;
     
             const response = await fetch(url, {
                 method: 'POST',

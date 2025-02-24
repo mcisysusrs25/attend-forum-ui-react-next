@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
+import { getCurrentEnv } from '@/app/utils/nodeEnv';
 
 export default function AddBatchPage() {
   const router = useRouter();
@@ -10,6 +11,9 @@ export default function AddBatchPage() {
   const [students, setStudents] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const apiUrl = getCurrentEnv("dev"); 
+  console.log(apiUrl);
 
   // Authentication check
   useEffect(() => {
@@ -46,7 +50,7 @@ export default function AddBatchPage() {
         students: studentsArray,
       });
 
-      const response = await fetch('http://localhost:5000/api/batches/create', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
