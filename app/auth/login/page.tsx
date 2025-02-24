@@ -3,8 +3,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { User, KeyRound, Mail } from 'lucide-react';
 
-const BASE_URL = 'http://localhost:5000/api';
+const devUrl = process.env.NEXT_PUBLIC_DEV_URL; 
+
+console.log(devUrl);
 
 const Login = () => {
     const router = useRouter();
@@ -26,7 +29,6 @@ const Login = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         if (!formData.email || !formData.userID) {
             setMessage({ type: 'error', text: 'Please fill in all fields.' });
             return;
@@ -36,7 +38,7 @@ const Login = () => {
         setMessage(null);
 
         try {
-            const response = await fetch(`${BASE_URL}/auth/login`, {
+            const response = await fetch(`${devUrl}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,13 +53,8 @@ const Login = () => {
                 throw new Error(data.message || 'Failed to login');
             }
 
-            // Handle successful login
             const { user, token } = data.data;
-            
-            // Set the auth cookie
             document.cookie = `authToken=${token}; path=/; secure; samesite=strict`;
-            
-            // Store user data in sessionStorage
             sessionStorage.setItem('token', token);
             sessionStorage.setItem('userFullName', user.fullName);
             sessionStorage.setItem('userEmail', user.email);
@@ -65,15 +62,12 @@ const Login = () => {
             sessionStorage.setItem('userType', user.userType);
 
             setMessage({ type: 'success', text: 'Login successful!' });
-            
-            // Reset form
             setFormData({
                 email: '',
                 userID: '',
                 userType: 'professor'
             });
 
-            // Add a small delay to ensure cookie is set before navigation
             setTimeout(() => {
                 router.push('/dashboard');
             }, 100);
@@ -90,52 +84,97 @@ const Login = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-20 p-6 border rounded-lg shadow-lg bg-white">
-            <h1 className="text-2xl font-bold text-center mb-4">Login</h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                />
-                <input
-                    type="text"
-                    name="userID"
-                    value={formData.userID}
-                    onChange={handleChange}
-                    placeholder="User ID"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                />
-                <select
-                    name="userType"
-                    value={formData.userType}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    <option value="professor">Professor</option>
-                    <option value="student">Student</option>
-                </select>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {loading ? 'Logging in...' : 'Login'}
-                </button>
-            </form>
-            {message && (
-                <p className={`mt-4 text-center ${message.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                    {message.text}
-                </p>
-            )}
-            <Link href={'/auth/register'}>
-            <button className='mt-4 text-center p-3'>Student / Professor Create account</button>
-            </Link>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-2xl">
+                <div>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                        Welcome Back
+                    </h2>
+                    <p className="mt-2 text-center text-sm text-gray-600">
+                        Please sign in to continue
+                    </p>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+                    <div className="rounded-md shadow-sm space-y-4">
+                        <div className="relative">
+                            <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="Email address"
+                                className="appearance-none relative block w-full pl-12 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                required
+                            />
+                        </div>
+                        
+                        <div className="relative">
+                            <KeyRound className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <input
+                                type="text"
+                                name="userID"
+                                value={formData.userID}
+                                onChange={handleChange}
+                                placeholder="User ID"
+                                className="appearance-none relative block w-full pl-12 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                required
+                            />
+                        </div>
+                        
+                        <div className="relative">
+                            <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <select
+                                name="userType"
+                                value={formData.userType}
+                                onChange={handleChange}
+                                className="appearance-none relative block w-full pl-12 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            >
+                                <option value="professor">Professor</option>
+                                <option value="student">Student</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {message && (
+                        <div className={`rounded-md p-4 ${
+                            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+                        }`}>
+                            <p className="text-sm text-center">{message.text}</p>
+                        </div>
+                    )}
+
+                    <div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        >
+                            {loading ? 'Signing in...' : 'Sign in'}
+                        </button>
+                    </div>
+                </form>
+
+                <div className="mt-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white text-gray-500">
+                                New to the platform?
+                            </span>
+                        </div>
+                    </div>
+
+                    <Link href="/auth/register">
+                        <button className="mt-4 w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                            Create your account
+                        </button>
+                    </Link>
+                </div>
+            </div>
         </div>
     );
 };

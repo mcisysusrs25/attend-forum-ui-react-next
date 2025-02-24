@@ -186,6 +186,15 @@ export default function AddSessionPage() {
     }
   };
 
+  const handleClearForm = () => {
+    setSessionTitle('');
+    setSessionDescription('');
+    setSessionValidFrom('');
+    setSessionValidTo('');
+    setSubjectCode('');
+    setBatchID('');
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -200,6 +209,19 @@ export default function AddSessionPage() {
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+        <button onClick={() => router.push('/sessions')} className="flex items-center text-blue-500 mb-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path fillRule="evenodd" d="M10 18a1 1 0 01-.707-1.707L13.586 12H3a1 1 0 110-2h10.586l-4.293-4.293A1 1 0 0110 4a1 1 0 011 1v11a1 1 0 01-1 1z" clipRule="evenodd" />
+          </svg>
+          Back to List
+        </button>
+
         <h2 className="text-2xl font-bold mb-4">Add New Session</h2>
 
         {error && (
@@ -288,12 +310,21 @@ export default function AddSessionPage() {
             </select>
           </div>
 
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-300"
-          >
-            Add Session
-          </button>
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={handleClearForm}
+              className="mt-4 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors duration-300"
+            >
+              Clear Form
+            </button>
+            <button
+              type="submit"
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-300"
+            >
+              Add Session
+            </button>
+          </div>
         </form>
       </div>
     </div>
