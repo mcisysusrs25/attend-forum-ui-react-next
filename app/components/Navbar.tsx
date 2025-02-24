@@ -83,7 +83,7 @@ export default function Navbar() {
               <div className="flex h-16 items-center justify-between">
                 <div className="flex items-center">
                   <div className="shrink-0">
-                    <Image alt="Your Company" src="/logo.png" className="size-8" />
+                    <Image alt="Your Company" src="/logo.png" className="size-8" height={44} width={44} />
                   </div>
                   <div className="hidden md:block">
                     <div className="ml-10 flex items-baseline space-x-4">
