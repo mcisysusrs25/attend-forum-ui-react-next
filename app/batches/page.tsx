@@ -35,7 +35,7 @@ export default function BatchesPage() {
       setError(null);
       try {
         const data = await fetchBatches(authToken!, userId!);
-        setBatches(data.data || []);
+        setBatches(data?.data || []);
       } catch (err) {
         console.error("Fetch error:", err);
         setError(err instanceof Error ? err.message : "An error occurred");

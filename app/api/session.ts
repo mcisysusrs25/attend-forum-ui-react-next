@@ -9,7 +9,7 @@ export async function fetchSessions(userType: string, userID: string, authToken:
       } else if (userType === 'student') {
         apiEndpoint = `${process.env.API_BASE_URL}/sessions/getByStudentId/${userID}`;
       } else {
-        throw new Error('Invalid user type');
+        // throw new Error('Invalid user type');
       }
   
       const response = await fetch(apiEndpoint, {

@@ -14,7 +14,7 @@ export async function fetchClassroomConfigurations(authToken: string, userId: st
     console.log("got this->" + userId);
 
     if (!authToken || !userId) {
-        throw new Error("Unauthorized: Missing auth token or user ID");
+        // throw new Error("Unauthorized: Missing auth token or user ID");
     }
 
     const api_url = `${process.env.API_BASE_URL}/class-configurations`;
@@ -30,7 +30,7 @@ export async function fetchClassroomConfigurations(authToken: string, userId: st
 
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch configurations");
+        // throw new Error(errorData.message || "Failed to fetch configurations");
     }
 
     return response.json();
@@ -40,7 +40,7 @@ export async function deleteClassroomConfiguration(authToken: string, id: string
     console.log("Deleting configuration with ID->" + id);
 
     if (!authToken) {
-        throw new Error("Unauthorized: Missing auth token");
+        // throw new Error("Unauthorized: Missing auth token");
     }
 
     const response = await fetch(`${process.env.API_BASE_URL}/class-configurations/delete/${id}`, {
@@ -52,7 +52,7 @@ export async function deleteClassroomConfiguration(authToken: string, id: string
 
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete configuration');
+        // throw new Error(errorData.message || 'Failed to delete configuration');
     }
 }
 
@@ -72,12 +72,12 @@ export async function createClassroomConfig(newConfig: ConfigPayload, authToken:
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to create configuration');
+            // throw new Error(errorData.message || 'Failed to create configuration');
         }
 
         return response.json();
     } catch (err) {
-        throw new Error(err instanceof Error ? err.message : 'Failed to create configuration');
+        // throw new Error(err instanceof Error ? err.message : 'Failed to create configuration');
     }
 };
 
@@ -94,7 +94,7 @@ export async function fetchClassroomConfig(classConfigId: string, authToken: str
         if (!response.ok) throw new Error("Failed to fetch configuration");
         return response.json();
     } catch (err) {
-        throw new Error(err instanceof Error ? err.message : "An error occurred");
+        // throw new Error(err instanceof Error ? err.message : "An error occurred");
     }
 };
 
@@ -113,9 +113,9 @@ export async function updateClassroomConfig (classConfigId: string, configData: 
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
-            throw new Error(errorData?.message || "Failed to update configuration");
+            // throw new Error(errorData?.message || "Failed to update configuration");
         }
     } catch (err) {
-        throw new Error(err instanceof Error ? err.message : "An error occurred");
+        // throw new Error(err instanceof Error ? err.message : "An error occurred");
     }
 };

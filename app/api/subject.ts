@@ -53,13 +53,13 @@ export async function deleteSubject(subjectId: string, authToken: string) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Failed to delete subject');
+      // throw new Error(errorData.message || 'Failed to delete subject');
     }
 
     return true;
   } catch (error) {
     console.error('Error deleting subject:', error);
-    throw error instanceof Error ? error : new Error('An error occurred');
+    // throw error instanceof Error ? error : new Error('An error occurred');
   }
 }
 
@@ -85,7 +85,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to add subject');
+        // throw new Error(errorData.message || 'Failed to add subject');
       }
       
       return await response.json();
@@ -98,7 +98,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
   export async function updateSubject(subjectCode: string, subjectTitle: string, authToken: string) {
     try {
       if (!authToken) {
-        throw new Error('Unauthorized');
+        // throw new Error('Unauthorized');
       }
   
       console.log("Updating subject: ", subjectCode, subjectTitle);
@@ -120,20 +120,20 @@ export async function addSubject(subjectData: Subject, authToken: string) {
   
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to update subject');
+        // throw new Error(errorData.message || 'Failed to update subject');
       }
   
       return await response.json();
     } catch (error) {
       console.error('Error updating subject:', error);
-      throw error instanceof Error ? error : new Error('An error occurred');
+      // throw error instanceof Error ? error : new Error('An error occurred');
     }
   }
   
   export async function getSubjectBySubjectCode(subjectCode: string, authToken: string) {
     try {
       if (!authToken) {
-        throw new Error('Unauthorized');
+        // throw new Error('Unauthorized');
       }
   
       console.log("Fetching subject by code:", subjectCode);
@@ -152,7 +152,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('Fetch failed with status:', response.status, 'Message:', errorData.message);
-        throw new Error(errorData.message || 'Failed to fetch subject');
+        // throw new Error(errorData.message || 'Failed to fetch subject');
       }
   
       const data = await response.json();
@@ -160,7 +160,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
       return data;
     } catch (error) {
       console.error('Error fetching subject:', error);
-      throw error instanceof Error ? error : new Error('An error occurred');
+      // throw error instanceof Error ? error : new Error('An error occurred');
     }
   }
   

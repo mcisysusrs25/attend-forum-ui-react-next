@@ -26,7 +26,7 @@ export async function fetchSessionDetails(sessionId: string, authToken: string) 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('Error response:', errorData); // Debug log
-        throw new Error(errorData.message || 'Failed to fetch session details');
+        // throw new Error(errorData.message || 'Failed to fetch session details');
       }
   
       const sessionData = await response.json();
@@ -51,7 +51,7 @@ export async function fetchSessionDetails(sessionId: string, authToken: string) 
   ) {
     try {
       if (!authToken) {
-        throw new Error('Unauthorized');
+        // throw new Error('Unauthorized');
       }
   
       // Construct the payload
@@ -84,7 +84,7 @@ export async function fetchSessionDetails(sessionId: string, authToken: string) 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('Error response:', errorData); // Debug log
-        throw new Error(errorData.message || 'Failed to update attendance');
+        // throw new Error(errorData.message || 'Failed to update attendance');
       }
   
       // Parse and return the response data
@@ -94,6 +94,6 @@ export async function fetchSessionDetails(sessionId: string, authToken: string) 
       return { success: true };
     } catch (err) {
       console.error('Error updating attendance:', err);
-      throw err instanceof Error ? err : new Error('An error occurred');
+      // throw err instanceof Error ? err : new Error('An error occurred');
     }
   }

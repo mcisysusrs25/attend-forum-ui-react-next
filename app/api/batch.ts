@@ -6,7 +6,7 @@ export async function fetchBatches(authToken : string, userID : string) {
     console.log("got this->" + userID);
 
     if (!authToken || !userID) {
-        throw new Error("Unauthorized: Missing auth token or user ID");
+        // throw new Error("Unauthorized: Missing auth token or user ID");
     }
     
     
@@ -21,7 +21,10 @@ export async function fetchBatches(authToken : string, userID : string) {
 
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch batches");
+        console.log(errorData);
+        return;
+        // throw new Error(errorData.mes
+        //sage || "Failed to fetch batches");
     }
 
     return response.json();
@@ -30,7 +33,7 @@ export async function fetchBatches(authToken : string, userID : string) {
 export async function deleteBatch(batchId: string, authToken : string) {
 
     if (!authToken) {
-        throw new Error("Unauthorized: Missing auth token");
+        // throw new Error("Unauthorized: Missing auth token");
     }
 
     const response = await fetch(`${process.env.API_BASE_URL}/batches/delete/${batchId}`, {
@@ -43,7 +46,7 @@ export async function deleteBatch(batchId: string, authToken : string) {
 
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete batch");
+        // throw new Error(errorData.message || "Failed to delete batch");
     }
 
     return response.json();
@@ -54,7 +57,7 @@ export async function createBatch(batchLabel: string, students: string[], authTo
     console.log(userID);
 
     if (!authToken || !userID) {
-        throw new Error("User is not authenticated. Please log in again.");
+        // throw new Error("User is not authenticated. Please log in again.");
     }
 
     const apiUrl = `${process.env.API_BASE_URL}/batches/create`;
@@ -74,7 +77,7 @@ export async function createBatch(batchLabel: string, students: string[], authTo
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || "Failed to add batch");
+        // throw new Error(errorData?.message || "Failed to add batch");
     }
 
     return response.json();
@@ -85,7 +88,8 @@ export async function editBatch(batchID: string, studentsToAdd: string[], studen
     console.log("User ID: " + userID);
 
     if (!authToken || !userID) {
-        throw new Error("Unauthorized: Missing auth token or user ID");
+
+        // throw new Error("Unauthorized: Missing auth token or user ID");
     }
 
     const apiUrl = `${process.env.API_BASE_URL}/batches/edit`;
@@ -105,7 +109,7 @@ export async function editBatch(batchID: string, studentsToAdd: string[], studen
 
     if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update batch");
+        // throw new Error(errorData.message || "Failed to update batch");
     }
 
     return response.json();
@@ -145,7 +149,7 @@ export const fetchBatchDetails = async (batchID: string, authToken: string) => {
   
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || "Failed to update batch");
+    //   throw new Error(errorData?.message || "Failed to update batch");
     }
   
     return response.json();
