@@ -5,8 +5,11 @@ import { useEffect, useState } from 'react';
 import { Clock, Users, BookOpen, User, Calendar, Activity, Download } from 'lucide-react';
 import { fetchSessionDetails, updateAttendance } from '@/app/api/sessionDetails';
 import { getSessionAuthToken, getUserType, getUserId } from '@/app/utils/authSession';
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+
 
 interface Session {
   _id: string;
@@ -28,34 +31,14 @@ interface Session {
   __v: number;
 }
 
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}
-
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-none rounded-lg p-6 w-11/12 max-w-md">
-        <div className="text-center">
-          {children}
-        </div>
-        <div className="mt-4 flex justify-center">
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export default function SessionDetails() {
+
+  const [markSuccess, setMarkSuccess] = useState(false);
+  const [openInfo, setOpenInfo] = useState(false)
+
   const params = useParams();
   const router = useRouter();
   const sessionId = params.sessionId as string;
-
-  const [successAttenenceResult, setSuccessAttenenceResult] = useState(false);
 
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,10 +49,6 @@ export default function SessionDetails() {
   const authToken = getSessionAuthToken();
   const [userType, setUserType] = useState("student");
   const [studentID, setStudentID] = useState<string | null>(null);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch session details on component mount
   useEffect(() => {
@@ -124,73 +103,56 @@ export default function SessionDetails() {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
-
   const handleAttendenceExperiences = () => {
-    setModalMessage("You have to be physically present in the class to mark your attendance. This process will capture your geolocation. To proceed, please allow location access and continue.");
-    setIsModalOpen(true);
-
-  }
+     setOpenInfo(true);
+  };
 
   const handleMarkMyAttendance = async () => {
-    console.log("hello motherfucker");
-    setIsLoading(true);
-
+    
     try {
       if (!authToken || !studentID) {
         router.push('/auth/login');
         return;
       }
 
-      // Request geolocation with proper error handling
-      const getLocation = () =>
-        new Promise<{ latitude: number; longitude: number }>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              resolve({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-              });
+      // Get user's geolocation
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          // Call the API with geolocation data
+          const response = await fetch('http://localhost:5000/api/student/sessions/mark-attendance', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`,
             },
-            (error) => {
-              reject(error);
-            },
-            { timeout: 10000 } // Set a 10-second timeout
-          );
-        });
+            body: JSON.stringify({
+              sessionID: sessionId,
+              studentID: studentID,
+              lat: latitude,
+              long: longitude,
+            }),
+          });
 
-      try {
-        const { latitude, longitude } = await getLocation();
+          if (!response.ok) {
+            throw new Error('Failed to mark attendance');
+          }
 
-        // Make API request with geolocation data
-        const response = await fetch('http://localhost:5000/api/student/sessions/mark-attendance', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            sessionID: sessionId,
-            studentID: studentID,
-            lat: latitude,
-            long: longitude,
-          }),
-        });
-
-        if (!response.ok) {
-          setModalMessage("You are not within the allowed range. Please be in the classroom to mark your attendance.");
-          return;
+          const data = await response.json();
+          if (data.success) {
+            setMarkSuccess(true);
+            window.location.reload(); // Refresh the page to reflect changes
+          }
+        },
+        (error) => {
+          window.location.reload();
+          setError('Unable to retrieve your location. Please enable location services and try again.');
+          console.error('Geolocation error:', error);
         }
-        const data = await response.json();
-        setModalMessage(data.message);
-        setSuccessAttenenceResult(true);
-
-      } catch (locationError) {
-        setModalMessage("Unable to retrieve your location. Please enable location services and try again.");
-      }
+      );
     } catch (err) {
-      setModalMessage(err instanceof Error ? err.message : "An error occurred while marking attendance.");
-    } finally {
-      setIsLoading(false);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
   // Handle downloading session info
@@ -247,7 +209,7 @@ export default function SessionDetails() {
 
   // Check if the current student's attendance is already marked
   const isAttendanceMarked = session?.students.find((student) => student.studentID === studentID)?.attendanceStatus === 'Present';
-
+   
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -486,8 +448,8 @@ export default function SessionDetails() {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${student.attendanceStatus === 'Present'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
                                   }`}
                               >
                                 {student.attendanceStatus}
@@ -508,53 +470,70 @@ export default function SessionDetails() {
         {userType === "student" && !isAttendanceMarked && (
           <div className="fixed inset-x-0 bottom-8 grid place-items-center">
             <button
-              onClick={handleAttendenceExperiences}
+              onClick={handleMarkMyAttendance}
               className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200"
             >
               Mark My Attendance
             </button>
           </div>
         )}
+      </div>
 
-        {/* Modal */}
-        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="bg-white p-6 rounded-2xl shadow-xl w-80 md:w-96">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Notification</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700">
-                ✕
+      <Dialog open={openInfo} onClose={setOpenInfo} className="relative z-10">
+      <DialogBackdrop
+        transition
+        className="fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+      />
+
+      <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <DialogPanel
+            transition
+            className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+          >
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
+                  <ExclamationTriangleIcon aria-hidden="true" className="size-6 text-red-600" />
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <DialogTitle as="h3" className="text-base font-semibold text-gray-900">
+                    Deactivate account
+                  </DialogTitle>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      To capture Your attendance we require your Location data. Please turn on the GPS, and Allow for this website to capture the data.
+                      If you are within the 20M radius of the Classroom the Attendence will be captured.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+              <button
+                type="button"
+                onClick={() => handleMarkMyAttendance()}
+                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto"
+              >
+                Continue
+              </button>
+              <button
+                type="button"
+                data-autofocus
+                onClick={() => setOpenInfo(false)}
+                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-xs ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
+              >
+                Cancel
               </button>
             </div>
-
-            {isLoading ? (
-              <div className="flex flex-col items-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
-                <p className="text-gray-700">Processing your request...</p>
-              </div>
-            ) : (
-              <p className="text-gray-700 text-center">{modalMessage}</p>
-            )}
-
-            {!isLoading && (
-              <div className="mt-6 flex justify-center">
-                {/* The onclick will close on click of OK if successAttendanceResult is true */}
-                <button
-                  onClick={() => {
-                    if (!successAttenenceResult) {
-                      handleMarkMyAttendance();
-                    }
-                  }}
-                  className="px-4 py-2 w-[200px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                >
-                  OK
-                </button>
-              </div>
-            )}
-
-          </div>
-        </Modal>
-
+          </DialogPanel>
+        </div>
       </div>
+    </Dialog>
     </div>
+
+    
   );
+
+  
 }

@@ -6,13 +6,14 @@ export async function fetchSessions(userType: string, userID: string, authToken:
   
       if (userType === 'professor') {
         apiEndpoint = `${process.env.API_BASE_URL}/sessions/getSessionsbyProfessor/${userID}`;
+        console.log(apiEndpoint);
       } else if (userType === 'student') {
-        apiEndpoint = `${process.env.API_BASE_URL}/sessions/getByStudentId/${userID}`;
+        apiEndpoint = `${process.env.API_BASE_URL}/student/sessions/${userID}`;
+        console.log(apiEndpoint);
       } else {
-        // throw new Error('Invalid user type');
-        console.log("invlaid user type");
+        throw new Error('Invalid user type');
       }
-  
+
       const response = await fetch(apiEndpoint, {
         method: 'GET',
         headers: {
@@ -50,6 +51,7 @@ export async function fetchSessions(userType: string, userID: string, authToken:
   
     } catch (error) {
       console.error('Error fetching sessions:', error);
+      throw error;
       return {
         data: [],
         error: true,

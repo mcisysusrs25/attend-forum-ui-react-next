@@ -14,13 +14,13 @@ export async function loginUser(email: string, userID: string, userType: string)
       if (!response.ok) {
         const errorData = await response.json();
         console.log(errorData);
-        // throw new Error(errorData.message || 'Failed to login');
+        throw new Error(errorData.message || 'Failed to login');
       }
   
       const data = await response.json();
       return data;
     } catch (err) {
       console.error('Login error:', err);
-      // throw err;
+      throw err;
     }
   }

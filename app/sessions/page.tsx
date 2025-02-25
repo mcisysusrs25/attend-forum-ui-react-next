@@ -71,12 +71,13 @@ export default function AttendancePage() {
         // const data = await fetchSessions(userType!, userID, authToken);
 
         const { data, error, errorType } = await fetchSessions(userType!, userID, authToken);
+        
+        console.log(data);
         console.log("got this error" + error);
         console.log("got this error type" + errorType);
         if (error && (errorType == 'Token issue')) {
           alert(errorType + ":" + "We are rediecting you to the login page. Please login and Use the Application");
           sessionStorage.clear();
-          document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
           router.push('/auth/login');
         }
         setSessions(data);
@@ -93,7 +94,7 @@ export default function AttendancePage() {
 
   // Filter sessions when the filter changes
   useEffect(() => {
-    if (sessions.length > 0) {
+    if (sessions?.length > 0) {
       setFilteredSessions(sessions.filter((session) => session.sessionStatus === filter));
     }
   }, [filter, sessions]);
@@ -108,7 +109,7 @@ export default function AttendancePage() {
 
   // Generate QR code
   const openQRModal = async (sessionID: string) => {
-    const url = `${window.location.origin}/sessions/attendance/${sessionID}`;
+    const url = `${window.location.origin}/sessions/${sessionID}`;
     try {
       const dataUrl = await QRCode.toDataURL(url, { errorCorrectionLevel: 'H', width: 256 });
       setQRCodeDataUrl(dataUrl);

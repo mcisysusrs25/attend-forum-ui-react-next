@@ -40,7 +40,8 @@ const Login = () => {
     try {
       // Call the login API function
       const data = await loginUser(formData.email, formData.userID, formData.userType);
-      const { user, token } = data.data;
+      console.log("login data"+ data);
+      const { user, token } = data?.data;
 
       // Store user data in sessionStorage
       sessionStorage.setItem('authToken', token);
@@ -51,10 +52,11 @@ const Login = () => {
 
       // Show success message and redirect
       setMessage({ type: 'success', text: 'Login successful!' });
+      
 
- 
       console.log('Redirecting to /sessions');
       router.push('/sessions');
+
     } catch (error) {
       console.error('Login error:', error);
       setMessage({
