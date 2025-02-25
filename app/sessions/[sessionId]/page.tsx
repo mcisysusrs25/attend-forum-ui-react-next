@@ -34,7 +34,7 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, children }) => {
   if (!isOpen) return null;
 
   return (
@@ -185,6 +185,7 @@ export default function SessionDetails() {
         setSuccessAttenenceResult(true);
 
       } catch (locationError) {
+        console.log(locationError);
         setModalMessage("Unable to retrieve your location. Please enable location services and try again.");
       }
     } catch (err) {
@@ -540,7 +541,7 @@ export default function SessionDetails() {
                 {/* The onclick will close on click of OK if successAttendanceResult is true */}
                 <button
                   onClick={() => {
-                    if (!successAttenenceResult) {
+                    if (successAttenenceResult) {
                       handleMarkMyAttendance();
                     }
                   }}
