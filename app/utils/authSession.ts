@@ -1,18 +1,25 @@
 // utils/authSession.ts
+
+/**
+ * Get the authentication token from sessionStorage or localStorage.
+ * @returns {string | null} The auth token, or null if not found.
+ */
 export function getSessionAuthToken(): string | null {
-    try {
-      const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split('=');
-        acc[key] = value;
-        return acc;
-      }, {} as { [key: string]: string });
-  
-      return cookies['authToken'] || null;
-    } catch (error) {
-      console.error('Error getting auth token:', error);
-      return null;
+  try {
+    // Try sessionStorage first
+    let authToken = sessionStorage.getItem('authToken');
+
+    // If not in sessionStorage, try localStorage
+    if (!authToken) {
+      authToken = localStorage.getItem('authToken');
     }
+
+    return authToken;
+  } catch (error) {
+    console.error('Error getting auth token:', error);
+    return null;
   }
+}
   
   export function getUserId(): string | null {
     try {

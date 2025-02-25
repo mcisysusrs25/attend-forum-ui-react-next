@@ -1,288 +1,207 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { getUserId, getSessionAuthToken, getUserType } from '../utils/authSession'
-import QRCode from 'qrcode' // Import the qrcode library
-import Image from 'next/image'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getUserId, getSessionAuthToken, getUserType } from '../utils/authSession';
+import QRCode from 'qrcode';
+import Image from 'next/image';
+import { fetchSessions, updateSessionStatus, deleteSession, markAttendance } from '@/app/api/session';
 
 interface Session {
-  _id: string
-  sessionTitle: string
-  sessionDescription: string
-  sessionValidFrom: string
-  sessionValidTo: string
-  sessionStatus: string
-  subjectCode: string
-  createdBy: string
-  sessionID: string // Correct field to use
-  __v: number
+  _id: string;
+  sessionTitle: string;
+  sessionDescription: string;
+  sessionValidFrom: string;
+  sessionValidTo: string;
+  sessionStatus: string;
+  subjectCode: string;
+  createdBy: string;
+  sessionID: string;
+  __v: number;
 }
 
 export default function AttendancePage() {
-  const router = useRouter()
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [filteredSessions, setFilteredSessions] = useState<Session[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'active' | 'completed' | 'new'>('active')
-  const [showQRModal, setShowQRModal] = useState(false)
-  const [qrCodeDataUrl, setQRCodeDataUrl] = useState('') // Store the QR code as a Data URL
-  const [showAttendanceModal, setShowAttendanceModal] = useState(false)
-  const [attendanceError, setAttendanceError] = useState<string | null>(null)
+  const router = useRouter();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'active' | 'completed' | 'new'>('active');
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrCodeDataUrl, setQRCodeDataUrl] = useState('');
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [attendanceError, setAttendanceError] = useState<string | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string>('');
+  const [isMounted, setIsMounted] = useState(false);
 
-  const userType = getUserType() // Get the user type
+  // Fetch user data with useEffect to prevent hydration errors
+  const [userType, setUserType] = useState<string | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [userID, setUserID] = useState<string | null>(null);
 
-
-  const devUrl = "https://attend-forum-server-dev-1-0.onrender.com/api";
-const local_url = "http://localhost:5000/api";
-  // Function to open QR modal and generate QR code
-  const openQRModal = async (sessionID: string) => {
-    const url = `http://localhost:3000/sessions/attendance/${sessionID}` // Dynamic URL
-    try {
-      // Generate QR code as a Data URL
-      const dataUrl = await QRCode.toDataURL(url, {
-        errorCorrectionLevel: 'H', // High error correction
-        width: 256, // Size of the QR code
-      })
-      setQRCodeDataUrl(dataUrl)
-      setShowQRModal(true)
-    } catch (err) {
-      console.error('Failed to generate QR code:', err)
-      alert('Failed to generate QR code. Please try again.')
-    }
-  }
-
-  // Function to copy link to clipboard
-  const copyLinkToClipboard = (sessionID: string) => {
-    const link = `http://localhost:3000/sessions/attendance/${sessionID}`
-    navigator.clipboard.writeText(link).then(() => {
-      alert('Link copied to clipboard!')
-    }).catch(() => {
-      alert('Failed to copy link to clipboard.')
-    })
-  }
-
-  // Function to handle marking attendance
-  const handleMarkAttendance = async (sessionID: string) => {
-    try {
-      // Request geolocation access
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords
-
-          // Call API to mark attendance
-          const authToken = getSessionAuthToken()
-          if (!authToken) {
-            router.push('/auth/login')
-            return
-          }
-
-          const response = await fetch(`${devUrl}${sessionID}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify({
-              latitude,
-              longitude,
-            }),
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to mark attendance')
-          }
-
-          alert('Attendance marked successfully!')
-          setShowAttendanceModal(false)
-        },
-        (error) => {
-          console.error('Geolocation error:', error)
-          setAttendanceError('Geolocation access denied. Please enable location services to mark attendance.')
-        }
-      )
-    } catch (err) {
-      console.error('Attendance error:', err)
-      setAttendanceError(err instanceof Error ? err.message : 'An error occurred while marking attendance.')
-    }
-  }
-
+  // Set isMounted flag when the component mounts on the client side
   useEffect(() => {
-    const authToken = getSessionAuthToken();
-    if (!authToken) {
-      router.push('/auth/login');
+    setIsMounted(true);
+    setUserType(getUserType());
+    setAuthToken(getSessionAuthToken());
+    setUserID(getUserId());
+  }, []);
+
+  // Read the hash on component mount (only on client-side)
+  useEffect(() => {
+    if (isMounted) {
+      const hash = window.location.hash.substring(1); // Remove the '#' from the hash
+      if (hash === 'active' || hash === 'completed' || hash === 'new') {
+        setFilter(hash as 'active' | 'completed' | 'new');
+      }
+    }
+  }, [isMounted]);
+
+  // Fetch sessions on component mount
+  useEffect(() => {
+    if (!isMounted || !authToken || !userID) {
+      if (isMounted && (!authToken || !userID)) {
+        router.push('/auth/login');
+      }
       return;
     }
 
-    const fetchSessions = async () => {
+    const loadSessions = async () => {
       try {
         setLoading(true);
-        setError(null);
-        console.log(error);
+        // const data = await fetchSessions(userType!, userID, authToken);
 
-        const userID = getUserId();
-        const userType = getUserType();
-        console.log("pakad isko" + userType);
-
-        if (!userID) {
-          throw new Error('User ID not found');
+        const { data, error, errorType } = await fetchSessions(userType!, userID, authToken);
+        console.log("got this error" + error);
+        console.log("got this error type" + errorType);
+        if (error && (errorType == 'Token issue')) {
+          alert(errorType + ":" + "We are rediecting you to the login page. Please login and Use the Application");
+          sessionStorage.clear();
+          document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+          router.push('/auth/login');
         }
-
-        let apiEndpoint = '';
-
-        if (userType === "professor") {
-          apiEndpoint = `${devUrl}/sessions/getSessionsbyProfessor/${userID}`;
-        } else if (userType === "student") {
-          apiEndpoint = `${devUrl}/sessions/getByStudentId/${userID}`;
-        } else {
-          throw new Error("Invalid user type");
-        }
-
-        console.log(apiEndpoint);
-
-        const response = await fetch(apiEndpoint, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-          cache: 'no-store',
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Failed to fetch sessions');
-        }
-
-        const data = await response.json();
-
-        if (!data || !Array.isArray(data.data)) {
-          throw new Error('Invalid response format');
-        }
-
-        setSessions(data.data);
-        setFilteredSessions(
-          data.data.filter((session: { sessionStatus: string }) => session.sessionStatus === filter)
-        );
-      } catch (err) {
-        console.error('Fetch error:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setSessions(data);
+        setFilteredSessions(data.filter((session: Session) => session.sessionStatus === filter));
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSessions();
-  }, [filter, router]);
+    loadSessions();
+  }, [filter, authToken, userID, userType, router, isMounted]);
 
-  // Separate effect for filtering
+  // Filter sessions when the filter changes
   useEffect(() => {
     if (sessions.length > 0) {
-      setFilteredSessions(sessions.filter((session) => session.sessionStatus === filter))
+      setFilteredSessions(sessions.filter((session) => session.sessionStatus === filter));
     }
-  }, [filter, sessions])
+  }, [filter, sessions]);
 
-  // Handle status change
-  const handleStatusChange = async (sessionID: string, newStatus: string) => {
+  // Update the URL hash when the filter changes
+  const handleFilterChange = (newFilter: 'active' | 'completed' | 'new') => {
+    setFilter(newFilter);
+    if (isMounted) {
+      window.location.hash = newFilter;
+    }
+  };
+
+  // Generate QR code
+  const openQRModal = async (sessionID: string) => {
+    const url = `${window.location.origin}/sessions/attendance/${sessionID}`;
     try {
-      const authToken = getSessionAuthToken()
-      if (!authToken) {
-        router.push('/auth/login')
-        return
-      }
-
-      const response = await fetch(`${devUrl}/sessions/updateStatus/${sessionID}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update status')
-      }
-
-      // Refresh the page to reflect changes
-      window.location.reload()
+      const dataUrl = await QRCode.toDataURL(url, { errorCorrectionLevel: 'H', width: 256 });
+      setQRCodeDataUrl(dataUrl);
+      setShowQRModal(true);
     } catch (err) {
-      console.error('Status update error:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      console.error('Failed to generate QR code:', err);
+      alert('Failed to generate QR code. Please try again.');
     }
-  }
+  };
 
-  // Handle toggle click
-  const handleToggleClick = (session: Session) => {
-    const newStatus = session.sessionStatus === 'active' ? 'completed' : 'active'
-    const action = session.sessionStatus === 'active' ? 'mark this session as completed' : 'activate this session'
+  // Copy link to clipboard
+  const copyLinkToClipboard = (sessionID: string) => {
+    const link = `${window.location.origin}/sessions/attendance/${sessionID}`;
+    navigator.clipboard.writeText(link).then(() => {
+      alert('Link copied to clipboard!');
+    }).catch(() => {
+      alert('Failed to copy link to clipboard.');
+    });
+  };
 
-    // Confirmation using alert
-    const isConfirmed = window.confirm(`Are you sure you want to ${action}?`)
+  // Mark attendance
+  const handleMarkAttendance = async (sessionID: string) => {
+    try {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          await markAttendance(sessionID, latitude, longitude, authToken!);
+          alert('Attendance marked successfully!');
+          setShowAttendanceModal(false);
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          setAttendanceError('Geolocation access denied. Please enable location services to mark attendance.');
+        }
+      );
+    } catch (error) {
+      console.error('Attendance error:', error);
+      setAttendanceError(error instanceof Error ? error.message : 'An error occurred while marking attendance.');
+    }
+  };
+
+  // Update session status with confirmation
+  const handleStatusChange = async (sessionID: string, newStatus: string) => {
+    const isConfirmed = window.confirm(
+      newStatus === 'completed'
+        ? 'Are you sure you want to mark this session as completed?'
+        : 'Are you sure you want to activate this session?'
+    );
+
     if (isConfirmed) {
-      handleStatusChange(session.sessionID, newStatus) // Use session.sessionID instead of session._id
+      try {
+        await updateSessionStatus(sessionID, newStatus, authToken!);
+        setSessions(prevSessions =>
+          prevSessions.map(session =>
+            session.sessionID === sessionID
+              ? { ...session, sessionStatus: newStatus }
+              : session
+          )
+        );
+      } catch (error) {
+        console.error('Status update error:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
+      }
     }
-  }
+  };
 
-  // Handle delete click
+  // Delete session
   const handleDeleteClick = async (session: Session) => {
     const isConfirmed = window.confirm(
       session.sessionStatus === 'active'
         ? 'This session is active. Are you sure you want to delete it?'
         : 'Are you sure you want to delete this session?'
-    )
+    );
 
     if (isConfirmed) {
       try {
-        const authToken = getSessionAuthToken()
-        if (!authToken) {
-          router.push('/auth/login')
-          return
-        }
-
-        const response = await fetch(`${devUrl}/sessions/delete/${session.sessionID}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to delete session')
-        }
-
-        // Refresh the page to reflect changes
-        window.location.reload()
-      } catch (err) {
-        console.error('Delete error:', err)
-        setError(err instanceof Error ? err.message : 'An error occurred')
+        await deleteSession(session.sessionID, authToken!);
+        setSessions(prevSessions =>
+          prevSessions.filter(s => s.sessionID !== session.sessionID)
+        );
+      } catch (error) {
+        console.error('Delete error:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
       }
     }
-  }
+  };
 
-  // Handle edit click
-  const handleEditClick = (sessionID: string) => {
-    router.push(`sessions/update-session/${sessionID}`)
-  }
-
-  // Get toggle label based on status
-  const getToggleLabel = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Mark as Completed'
-      case 'new':
-        return 'Activate Session'
-      default:
-        return 'Toggle Status'
-    }
-  }
-
-  // Handle see details click
-  const handleSeeDetailsClick = (sessionID: string) => {
-    router.push(`/sessions/${sessionID}`)
-  }
+  // Open attendance modal for a specific session
+  const openAttendanceModal = (sessionID: string) => {
+    setCurrentSessionId(sessionID);
+    setShowAttendanceModal(true);
+  };
 
   // Skeleton Loading Component
   const SkeletonLoading = () => (
@@ -312,20 +231,31 @@ const local_url = "http://localhost:5000/api";
         </div>
       ))}
     </div>
-  )
+  );
+
+  // Safely render client-side content only after mounting
+  if (!isMounted) {
+    return (
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <SkeletonLoading />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filter Buttons */}
         <div className="flex space-x-4 mb-8">
-          {(userType === 'professor' ? ['active', 'completed', 'new'] : ['active', 'completed']).map((status) => (
+          {/* Filter Buttons */}
+          {['active', 'completed', ...(userType === 'professor' ? ['new'] : [])].map((status) => (
             <button
               key={status}
-              onClick={() => setFilter(status as 'active' | 'completed' | 'new')}
+              onClick={() => handleFilterChange(status as 'active' | 'completed' | 'new')}
               className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm ${filter === status
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-blue-200'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-blue-200'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                 }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -361,10 +291,10 @@ const local_url = "http://localhost:5000/api";
                         </h3>
                         <span
                           className={`px-4 py-1.5 rounded-full text-xs font-semibold inline-flex items-center ${session.sessionStatus === 'active'
-                              ? 'bg-green-50 text-green-700 border border-green-200'
-                              : session.sessionStatus === 'completed'
-                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            ? 'bg-green-50 text-green-700 border border-green-200'
+                            : session.sessionStatus === 'completed'
+                              ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
                             }`}
                         >
                           {session.sessionStatus}
@@ -409,8 +339,8 @@ const local_url = "http://localhost:5000/api";
                           {session.sessionStatus === 'new' && (
                             <button
                               onClick={(e) => {
-                                e.stopPropagation()
-                                handleEditClick(session.sessionID)
+                                e.stopPropagation();
+                                router.push(`sessions/update-session/${session.sessionID}`);
                               }}
                               className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-sm hover:shadow font-medium text-sm min-w-[120px]"
                             >
@@ -420,8 +350,8 @@ const local_url = "http://localhost:5000/api";
 
                           <button
                             onClick={(e) => {
-                              e.stopPropagation()
-                              handleDeleteClick(session)
+                              e.stopPropagation();
+                              handleDeleteClick(session);
                             }}
                             className="px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-sm hover:shadow font-medium text-sm min-w-[120px]"
                           >
@@ -430,18 +360,18 @@ const local_url = "http://localhost:5000/api";
 
                           <button
                             onClick={(e) => {
-                              e.stopPropagation()
-                              handleToggleClick(session)
+                              e.stopPropagation();
+                              handleStatusChange(session.sessionID, session.sessionStatus === 'active' ? 'completed' : 'active');
                             }}
                             className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-sm hover:shadow font-medium text-sm min-w-[120px]"
                           >
-                            {getToggleLabel(session.sessionStatus)}
+                            {session.sessionStatus === 'active' ? 'Mark as Completed' : 'Activate Session'}
                           </button>
 
                           <button
                             onClick={(e) => {
-                              e.stopPropagation()
-                              copyLinkToClipboard(session.sessionID)
+                              e.stopPropagation();
+                              copyLinkToClipboard(session.sessionID);
                             }}
                             className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all duration-300 shadow-sm hover:shadow font-medium text-sm min-w-[120px]"
                           >
@@ -452,8 +382,8 @@ const local_url = "http://localhost:5000/api";
 
                       <button
                         onClick={(e) => {
-                          e.stopPropagation()
-                          openQRModal(session.sessionID)
+                          e.stopPropagation();
+                          openQRModal(session.sessionID);
                         }}
                         className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-sm hover:shadow font-medium text-sm min-w-[120px]"
                       >
@@ -463,8 +393,8 @@ const local_url = "http://localhost:5000/api";
                       {userType === 'student' && (
                         <button
                           onClick={(e) => {
-                            e.stopPropagation()
-                            setShowAttendanceModal(true)
+                            e.stopPropagation();
+                            openAttendanceModal(session.sessionID);
                           }}
                           className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-sm hover:shadow font-medium text-sm min-w-[120px]"
                         >
@@ -474,8 +404,8 @@ const local_url = "http://localhost:5000/api";
 
                       <button
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleSeeDetailsClick(session.sessionID)
+                          e.stopPropagation();
+                          router.push(`/sessions/${session.sessionID}`);
                         }}
                         className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-sm hover:shadow font-medium text-sm min-w-[120px]"
                       >
@@ -547,11 +477,15 @@ const local_url = "http://localhost:5000/api";
               {/* QR Code Container */}
               <div className="flex justify-center">
                 <div className="bg-white p-4 rounded-xl shadow-inner border-2 border-dashed border-gray-200">
-                  <Image
-                    src={qrCodeDataUrl}
-                    alt="QR Code"
-                    className="w-72 h-72 object-contain"
-                  />
+                  {qrCodeDataUrl && (
+                    <Image
+                      src={qrCodeDataUrl}
+                      alt="QR Code"
+                      width={288}
+                      height={288}
+                      className="object-contain"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -618,7 +552,7 @@ const local_url = "http://localhost:5000/api";
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleMarkAttendance(sessions[0].sessionID)} // Replace with the correct session ID
+                  onClick={() => handleMarkAttendance(currentSessionId)}
                   className="ml-4 px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                   Allow & Mark
@@ -629,5 +563,5 @@ const local_url = "http://localhost:5000/api";
         </div>
       )}
     </div>
-  )
+  );
 }

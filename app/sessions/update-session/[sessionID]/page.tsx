@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
-import { getCurrentEnv } from '@/app/utils/nodeEnv';
+import { fetchSessionDetails, updateSession, fetchBatches, fetchSubjects } from '@/app/api/session';
 
 interface Batch {
   _id: string;
@@ -48,7 +48,8 @@ interface Session {
 
 export default function UpdateSessionPage() {
   const router = useRouter();
-  const { sessionID } = useParams(); // Get sessionID from the URL
+  const params = useParams(); // Get params from the URL
+  const sessionID = typeof params.sessionID === 'string' ? params.sessionID : Array.isArray(params.sessionID) ? params.sessionID[0] : '';
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [sessionValidFrom, setSessionValidFrom] = useState('');
@@ -58,215 +59,164 @@ export default function UpdateSessionPage() {
   const [batches, setBatches] = useState<Batch[]>([]); // List of batches
   const [subjects, setSubjects] = useState<Subject[]>([]); // List of subjects
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  
+  // Loading state controls
+  const [loadingSession, setLoadingSession] = useState(true);
+  const [loadingBatches, setLoadingBatches] = useState(true);
+  const [loadingSubjects, setLoadingSubjects] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-
-
-  const apiUrl = getCurrentEnv("dev"); 
-  console.log(apiUrl);
+  const authToken = getSessionAuthToken();
+  const userID = getUserId();
 
   // Fetch session details
-useEffect(() => {
-    const fetchSessionDetails = async () => {
-      const authToken = getSessionAuthToken();
-      if (!authToken) {
-        router.push('/auth/login');
-        return;
-      }
-  
+  useEffect(() => {
+    if (!sessionID || !authToken || !userID) {
+      router.push('/auth/login');
+      return;
+    }
+
+    const loadSession = async () => {
       try {
-        setLoading(true);
+        setLoadingSession(true);
         setError(null);
-  
-        const response = await fetch(`${apiUrl}/sessions/gsd/${sessionID}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
-          },
-        });
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch session details');
-        }
-  
-        const data = await response.json();
-        const session: Session = data.data;
-  
+
+        const session = await fetchSessionDetails(sessionID, authToken);
+
         // Format the date and time for datetime-local input
         const formatDateTime = (dateTime: string) => {
           const date = new Date(dateTime);
           return date.toISOString().slice(0, 16); // Convert to "YYYY-MM-DDTHH:MM" format
         };
-  
+
         // Bind session details to the form fields
         setSessionTitle(session.sessionTitle);
         setSessionDescription(session.sessionDescription);
-        setSessionValidFrom(formatDateTime(session.sessionValidFrom)); // Format date and time
-        setSessionValidTo(formatDateTime(session.sessionValidTo)); // Format date and time
+        setSessionValidFrom(formatDateTime(session.sessionValidFrom));
+        setSessionValidTo(formatDateTime(session.sessionValidTo));
         setSubjectCode(session.subjectCode);
         setBatchID(session.batchID);
-      } catch (err) {
-        console.error('Error fetching session details:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+      } catch (error) {
+        console.error('Error fetching session details:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
       } finally {
-        setLoading(false);
+        setLoadingSession(false);
       }
     };
-  
-    fetchSessionDetails();
-  }, [sessionID, router]);
+
+    loadSession();
+  }, [sessionID, authToken, userID, router]);
 
   // Fetch batches for the professor
   useEffect(() => {
-    const fetchBatches = async () => {
-      const authToken = getSessionAuthToken();
-      const userID = getUserId();
+    if (!authToken || !userID) {
+      return;
+    }
 
-      if (!authToken || !userID) {
-        console.log("User is not authenticated");
-        setError('User is not authenticated. Please log in again.');
-        return;
-      }
-
+    const loadBatches = async () => {
       try {
-        const response = await fetch(`${apiUrl}/batches/getBatchByProfessorId`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            professorID: userID
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch batches');
-        }
-
-        const data = await response.json();
-        setBatches(data.data); // Set the fetched batches
-      } catch (err) {
-        console.error('Error fetching batches:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setLoadingBatches(true);
+        const data = await fetchBatches(userID, authToken);
+        setBatches(data);
+      } catch (error) {
+        console.error('Error fetching batches:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
+      } finally {
+        setLoadingBatches(false);
       }
     };
 
-    fetchBatches();
-  }, [router]);
+    loadBatches();
+  }, [authToken, userID]);
 
   // Fetch subjects for the professor
   useEffect(() => {
-    const fetchSubjects = async () => {
-      const authToken = getSessionAuthToken();
-      const userID = getUserId();
+    if (!authToken || !userID) {
+      return;
+    }
 
-      if (!authToken || !userID) {
-        console.log("User is not authenticated");
-        setError('User is not authenticated. Please log in again.');
-        return;
-      }
-
+    const loadSubjects = async () => {
       try {
-        const response = await fetch(`${apiUrl}/subjects/getsubjects/${userID}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch subjects');
-        }
-
-        const data = await response.json();
-        setSubjects(data.data); // Set the fetched subjects
-      } catch (err) {
-        console.error('Error fetching subjects:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setLoadingSubjects(true);
+        const data = await fetchSubjects(userID, authToken);
+        setSubjects(data);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
+      } finally {
+        setLoadingSubjects(false);
       }
     };
 
-    fetchSubjects();
-  }, [router]);
+    loadSubjects();
+  }, [authToken, userID]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
 
-    const authToken = getSessionAuthToken();
-    const userID = getUserId();
-
     if (!authToken || !userID) {
-      console.log("User is not authenticated");
       setError('User is not authenticated. Please log in again.');
-      setLoading(false);
+      setSubmitting(false);
       return;
     }
 
     try {
-      console.log("Sending request to update session with data:", {
+      const sessionData = {
         sessionTitle,
         sessionDescription,
         sessionValidFrom,
         sessionValidTo,
         subjectCode,
         batchID,
-        createdBy: userID
-      });
+        createdBy: userID,
+      };
 
-      const response = await fetch(`${apiUrl}/sessions/updateSession/${sessionID}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          sessionTitle,
-          sessionDescription,
-          sessionValidFrom,
-          sessionValidTo,
-          subjectCode,
-          batchID,
-          createdBy: userID
-        }),
-      });
-
-      console.log("Received response:", response);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error response:", errorData);
-        throw new Error(errorData.message || 'Failed to update session');
-      }
+      await updateSession(sessionID, sessionData, authToken);
 
       // Redirect after successful submission
-      console.log("Session updated successfully, redirecting to sessions");
-      router.push('/sessions'); // Redirect to the session list or desired page
-    } catch (err) {
-      console.error('Error updating session:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      router.push('/sessions#new');
+    } catch (error) {
+      console.error('Error updating session:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Loading session details...</p>
+  // Check if any data is still loading
+  const isLoading = loadingSession || loadingBatches || loadingSubjects;
+
+  // Skeleton loading component
+  const SkeletonForm = () => (
+    <div className="space-y-4 animate-pulse">
+      <div className="h-5 bg-gray-200 rounded w-1/4 mb-2"></div>
+      <div className="h-10 bg-gray-200 rounded w-full"></div>
+      
+      <div className="h-5 bg-gray-200 rounded w-1/4 mb-2"></div>
+      <div className="h-24 bg-gray-200 rounded w-full"></div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <div className="h-5 bg-gray-200 rounded w-1/2 mb-2"></div>
+          <div className="h-10 bg-gray-200 rounded w-full"></div>
+        </div>
+        <div>
+          <div className="h-5 bg-gray-200 rounded w-1/2 mb-2"></div>
+          <div className="h-10 bg-gray-200 rounded w-full"></div>
         </div>
       </div>
-    );
-  }
+      
+      <div className="h-5 bg-gray-200 rounded w-1/4 mb-2"></div>
+      <div className="h-10 bg-gray-200 rounded w-full"></div>
+      
+      <div className="h-5 bg-gray-200 rounded w-1/4 mb-2"></div>
+      <div className="h-10 bg-gray-200 rounded w-full"></div>
+      
+      <div className="h-10 bg-gray-200 rounded w-28 mt-4"></div>
+    </div>
+  );
 
   return (
     <div className="bg-white">
@@ -274,98 +224,111 @@ useEffect(() => {
         <h2 className="text-2xl font-bold mb-4">Update Session</h2>
 
         {error && (
-          <div className="mb-4 text-red-500">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-500">
             <p>{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Session Title</label>
-            <input
-              type="text"
-              value={sessionTitle}
-              onChange={(e) => setSessionTitle(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              value={sessionDescription}
-              onChange={(e) => setSessionDescription(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+        {isLoading ? (
+          <SkeletonForm />
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Valid From</label>
+              <label className="block text-sm font-medium text-gray-700">Session Title</label>
               <input
-                type="datetime-local"
-                value={sessionValidFrom}
-                onChange={(e) => setSessionValidFrom(e.target.value)}
+                type="text"
+                value={sessionTitle}
+                onChange={(e) => setSessionTitle(e.target.value)}
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                disabled={submitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Valid To</label>
-              <input
-                type="datetime-local"
-                value={sessionValidTo}
-                onChange={(e) => setSessionValidTo(e.target.value)}
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea
+                value={sessionDescription}
+                onChange={(e) => setSessionDescription(e.target.value)}
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                disabled={submitting}
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Select Subject</label>
-            <select
-              value={subjectCode}
-              onChange={(e) => setSubjectCode(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Valid From</label>
+                <input
+                  type="datetime-local"
+                  value={sessionValidFrom}
+                  onChange={(e) => setSessionValidFrom(e.target.value)}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  disabled={submitting}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Valid To</label>
+                <input
+                  type="datetime-local"
+                  value={sessionValidTo}
+                  onChange={(e) => setSessionValidTo(e.target.value)}
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  disabled={submitting}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Select Subject</label>
+              <select
+                value={subjectCode}
+                onChange={(e) => setSubjectCode(e.target.value)}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                disabled={submitting}
+              >
+                <option value="">Select a subject</option>
+                {subjects.map((subject) => (
+                  <option key={subject._id} value={subject.subjectCode}>
+                    {subject.title} ({subject.subjectCode})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Select Batch</label>
+              <select
+                value={batchID}
+                onChange={(e) => setBatchID(e.target.value)}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                disabled={submitting}
+              >
+                <option value="">Select a batch</option>
+                {batches.map((batch) => (
+                  <option key={batch.batchID} value={batch.batchID}>
+                    {batch.batchLabel} (ID: {batch.batchID})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              className={`mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-300 ${
+                submitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={submitting}
             >
-              <option value="">Select a subject</option>
-              {subjects.map((subject) => (
-                <option key={subject._id} value={subject.subjectCode}>
-                  {subject.title} ({subject.subjectCode})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Select Batch</label>
-            <select
-              value={batchID}
-              onChange={(e) => setBatchID(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            >
-              <option value="">Select a batch</option>
-              {batches.map((batch) => (
-                <option key={batch.batchID} value={batch.batchID}>
-                  {batch.batchLabel} (ID: {batch.batchID})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-300"
-          >
-            Update Session
-          </button>
-        </form>
+              {submitting ? 'Updating...' : 'Update Session'}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ export default function RedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/sessions');
+    router.replace('/config');
   }, [router]);
 
   return null;

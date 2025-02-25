@@ -3,20 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
-import { getCurrentEnv } from '@/app/utils/nodeEnv';
+import { addSubject } from '@/app/api/subject'; // Import the function
 
 export default function AddSubjectPage() {
   const router = useRouter();
   const [subjectCode, setSubjectCode] = useState('');
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [creditHours, setCreditHours] = useState(0);
-  const [subjectTerm, setSubjectTerm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const apiUrl = getCurrentEnv("dev");
-  console.log(apiUrl);
 
   // Authentication check
   useEffect(() => {
@@ -44,42 +38,19 @@ export default function AddSubjectPage() {
     }
 
     try {
-      console.log("Sending request to add subject with data:", {
-        subjectCode,
-        title,
-        description,
-        creditHours,
-        subjectTerm,
-        professorID: userID, // Use the authenticated user's ID
-      });
-
-      const response = await fetch(`${apiUrl}/subjects/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
+      // Call the addSubject function
+      await addSubject(
+        {
           subjectCode,
           title,
-          description,
-          creditHours,
-          subjectTerm,
           professorID: userID,
-        }),
-      });
-
-      console.log("Received response:", response);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error response:", errorData);
-        throw new Error(errorData.message || 'Failed to add subject');
-      }
-
+        },
+        authToken
+      );
+      
       // Redirect after successful submission
       console.log("Subject added successfully, redirecting to subjects");
-      router.push('/subjects'); // Redirect to the subject list or desired page
+      router.push('/subjects');
     } catch (err) {
       console.error('Error adding subject:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -132,39 +103,6 @@ export default function AddSubjectPage() {
               className="mt-1 block w-full border border-gray-300 rounded-md p-2"
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Credit Hours</label>
-            <input
-              type="number"
-              value={creditHours}
-              onChange={(e) => setCreditHours(Number(e.target.value))}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Subject Term</label>
-            <input
-              type="text"
-              value={subjectTerm}
-              onChange={(e) => setSubjectTerm(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-
           <button
             type="submit"
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-300"

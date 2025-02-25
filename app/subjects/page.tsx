@@ -3,15 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
-import { getCurrentEnv } from '../utils/nodeEnv';
+import { fetchSubjects, deleteSubject } from '@/app/api/subject';
+import { PlusCircle, Edit2, Trash2, BookOpen, Clock, Award } from 'lucide-react';
 
 interface Subject {
   _id: string;
   subjectCode: string;
   title: string;
-  description: string;
-  creditHours: number;
-  subjectTerm: string;
   professorID: string;
   createdAt: string;
   updatedAt: string;
@@ -24,45 +22,24 @@ export default function SubjectsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-   const apiUrl = getCurrentEnv("dev");
-    console.log(apiUrl);
-  
-
-  // Fetch subjects on component mount
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
-
+  
       const authToken = getSessionAuthToken();
       const userID = getUserId();
-
+  
       if (!authToken || !userID) {
-        console.log("User is not authenticated");
+        alert(authToken);
+        alert(userID);
         router.push('/auth/login');
         return;
       }
-
+  
       try {
-        const response = await fetch(`${apiUrl}/subjects/getsubjects/${userID}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch subjects');
-        }
-
-        const data = await response.json();
-        if (!data || !Array.isArray(data.data)) {
-          throw new Error('Invalid response format');
-        }
-
-        setSubjects(data.data);
+        const data = await fetchSubjects(userID, authToken);
+        setSubjects(data || []); // Ensure it never sets undefined
       } catch (err) {
         console.error('Fetch error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -70,9 +47,11 @@ export default function SubjectsPage() {
         setLoading(false);
       }
     };
-
-    fetchSubjects();
+  
+    fetchData();
   }, [router]);
+  
+
 
   // Handle subject deletion
   const handleDelete = async (subjectId: string) => {
@@ -86,21 +65,9 @@ export default function SubjectsPage() {
     }
 
     try {
-      const response = await fetch(`${apiUrl}/subjects/delete/${subjectId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete subject');
-      }
-
+      await deleteSubject(subjectId, authToken);
       // Refresh the list after deletion
-      setSubjects((prev) => prev.filter((subject) => subject._id !== subjectId));
+      setSubjects((prev) => prev.filter((subject) => subject.subjectCode !== subjectId));
     } catch (err) {
       console.error('Delete error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -112,12 +79,17 @@ export default function SubjectsPage() {
     router.push(`/subjects/edit/${subjectId}`);
   };
 
+  // Handle add new subject
+  const handleAddNew = () => {
+    router.push('/subjects/new');
+  };
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Loading subjects...</p>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center p-8 rounded-xl shadow-sm bg-white">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-700 font-medium">Loading your subjects...</p>
         </div>
       </div>
     );
@@ -125,15 +97,18 @@ export default function SubjectsPage() {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center py-8 text-red-500">
-          <p className="text-xl font-semibold mb-2">Error</p>
-          <p>{error}</p>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center p-8 rounded-xl shadow-md bg-white max-w-md w-full">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-red-500 text-2xl">!</span>
+          </div>
+          <p className="text-xl font-semibold text-gray-800 mb-2">Error Loading Subjects</p>
+          <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-sm"
           >
-            Retry
+            Try Again
           </button>
         </div>
       </div>
@@ -141,51 +116,71 @@ export default function SubjectsPage() {
   }
 
   return (
-    <div className="bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         {subjects.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">No subjects found</div>
+          <div className="bg-white rounded-xl shadow-md p-12 text-center">
+            <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <BookOpen size={32} className="text-indigo-600" />
+            </div>
+            <h3 className="text-xl font-medium text-gray-800 mb-2">No subjects found</h3>
+            <p className="text-gray-600 mb-6">Get started by adding your first subject</p>
+            <button
+              onClick={handleAddNew}
+              className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-sm"
+            >
+              Add Subject
+            </button>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {subjects.map((subject) => (
               <div
                 key={subject._id}
-                className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 border border-gray-100"
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 group"
               >
-                <div className="flex justify-between items-start">
-                  <div className="space-y-3 flex-1">
-                    <h3 className="text-xl font-bold text-gray-900">{subject.title}</h3>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Code:</span> {subject.subjectCode}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Description:</span> {subject.description}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Credit Hours:</span> {subject.creditHours}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Term:</span> {subject.subjectTerm}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Created At:</span>{' '}
-                      {new Date(subject.createdAt).toLocaleDateString()}
-                    </p>
+                <div className="h-2 bg-indigo-600"></div>
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
+                      {subject.title}
+                    </h3>
+                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button
+                        onClick={() => handleEdit(subject.subjectCode)}
+                        className="p-1.5 rounded-md text-gray-500 hover:text-indigo-600 hover:bg-indigo-50"
+                        aria-label="Edit subject"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(subject.subjectCode)}
+                        className="p-1.5 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50"
+                        aria-label="Delete subject"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEdit(subject._id)}
-                      className="text-blue-500 hover:text-blue-600"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => handleDelete(subject._id)}
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      🗑️
-                    </button>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center text-sm">
+                      <div className="w-8 h-8 rounded-md bg-indigo-100 flex items-center justify-center mr-3">
+                        <span className="font-medium text-indigo-700">{subject.subjectCode.slice(0, 2)}</span>
+                      </div>
+                      <div>
+                        <span className="block text-gray-800 font-medium">Code</span>
+                        <span className="block text-gray-600">{subject.subjectCode}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2 text-xs text-gray-500">
+                      Added on {new Date(subject.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>

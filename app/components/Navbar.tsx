@@ -9,15 +9,13 @@ import { useEffect, useState } from 'react'
 
 // Define navigation items for professors and students
 const professorNavigation = [
-  { name: 'Dashboard', href: '/dashboard' },
   { name: 'My Sessions', href: '/sessions' },
   { name: 'My Subjects', href: '/subjects' },
   { name: 'My Batches', href: '/batches' },
-  { name: 'Settings', href: '/settings' },
+  { name: 'Class Configuration', href: '/config' },
 ]
 
 const studentNavigation = [
-  { name: 'Dashboard', href: '/dashboard' },
   { name: 'My Sessions', href: '/sessions' },
 ]
 
@@ -71,7 +69,7 @@ export default function Navbar() {
 
   const navigation = user.userType === 'professor' ? professorNavigation : studentNavigation;
 
-  const currentPage = navigation.find((item) => pathname === item.href)?.name || 'Dashboard';
+  const currentPage = navigation.find((item) => pathname === item.href)?.name || 'sessions';
 
   return (
     <div className="min-h-full">

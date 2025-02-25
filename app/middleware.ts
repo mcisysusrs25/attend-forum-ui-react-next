@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
     });
 
     // Protected routes that require authentication
-    const protectedRoutes = ['/dashboard', '/sessions', '/professor', '/student', ];
+    const protectedRoutes = ['/', '/sessions', '/professor', '/student','/config' ];
     const isProtectedRoute = protectedRoutes.some(route => currentPath.startsWith(route));
 
     // Auth pages (login, register, etc.)
@@ -29,8 +29,8 @@ export function middleware(request: NextRequest) {
     }
 
     if (authToken && isAuthPage) {
-        console.log('Has auth token on auth page - redirecting to /dashboard');
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        console.log('Has auth token on auth page - redirecting to /sessions');
+        return NextResponse.redirect(new URL('/sessions', request.url));
     }
 
     return NextResponse.next();
