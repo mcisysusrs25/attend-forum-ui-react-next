@@ -46,6 +46,7 @@ export async function deleteBatch(batchId: string, authToken : string) {
 
     if (!response.ok) {
         const errorData = await response.json();
+        console.log(errorData);
         // throw new Error(errorData.message || "Failed to delete batch");
     }
 
@@ -77,6 +78,7 @@ export async function createBatch(batchLabel: string, students: string[], authTo
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
+        console.log(errorData);
         // throw new Error(errorData?.message || "Failed to add batch");
     }
 
@@ -109,6 +111,7 @@ export async function editBatch(batchID: string, studentsToAdd: string[], studen
 
     if (!response.ok) {
         const errorData = await response.json();
+        console.log(errorData);
         // throw new Error(errorData.message || "Failed to update batch");
     }
 
@@ -149,6 +152,7 @@ export const fetchBatchDetails = async (batchID: string, authToken: string) => {
   
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
+      console.log(errorData);
     //   throw new Error(errorData?.message || "Failed to update batch");
     }
   

@@ -30,6 +30,7 @@ export async function fetchClassroomConfigurations(authToken: string, userId: st
 
     if (!response.ok) {
         const errorData = await response.json();
+        console.log(errorData);
         // throw new Error(errorData.message || "Failed to fetch configurations");
     }
 
@@ -40,6 +41,7 @@ export async function deleteClassroomConfiguration(authToken: string, id: string
     console.log("Deleting configuration with ID->" + id);
 
     if (!authToken) {
+        console.log("auth token missing");
         // throw new Error("Unauthorized: Missing auth token");
     }
 
@@ -52,6 +54,7 @@ export async function deleteClassroomConfiguration(authToken: string, id: string
 
     if (!response.ok) {
         const errorData = await response.json();
+        console.log(errorData);
         // throw new Error(errorData.message || 'Failed to delete configuration');
     }
 }
@@ -72,11 +75,13 @@ export async function createClassroomConfig(newConfig: ConfigPayload, authToken:
 
         if (!response.ok) {
             const errorData = await response.json();
+            console.log(errorData);
             // throw new Error(errorData.message || 'Failed to create configuration');
         }
 
         return response.json();
     } catch (err) {
+        console.log(err);
         // throw new Error(err instanceof Error ? err.message : 'Failed to create configuration');
     }
 };
@@ -94,6 +99,7 @@ export async function fetchClassroomConfig(classConfigId: string, authToken: str
         if (!response.ok) throw new Error("Failed to fetch configuration");
         return response.json();
     } catch (err) {
+        console.log(err);
         // throw new Error(err instanceof Error ? err.message : "An error occurred");
     }
 };
@@ -113,6 +119,7 @@ export async function updateClassroomConfig (classConfigId: string, configData: 
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
+            console.log(errorData);
             // throw new Error(errorData?.message || "Failed to update configuration");
         }
     } catch (err) {
