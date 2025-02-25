@@ -1,5 +1,15 @@
-"use server"
-export async function registerUser(role: string, payload: any) {
+
+
+'use server';
+
+type StudentRegisterPayload = {
+  firstName: string;
+  lastName: string;
+  studentEmail: string;
+  studentID: string;
+};
+
+export async function registerUser(role: string, payload: StudentRegisterPayload) {
     try {
       // Set the appropriate URL based on the role
       const url =
