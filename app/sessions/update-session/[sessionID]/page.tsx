@@ -26,26 +26,6 @@ interface Subject {
   __v: number;
 }
 
-interface Session {
-  _id: string;
-  sessionTitle: string;
-  sessionDescription: string;
-  sessionValidFrom: string;
-  sessionValidTo: string;
-  sessionStatus: string;
-  subjectCode: string;
-  createdBy: string;
-  batchID: string;
-  students: {
-    studentID: string;
-    attendanceStatus: string;
-    _id: string;
-  }[];
-  sessionID: string;
-  sessionCreatedDateTime: string;
-  __v: number;
-}
-
 export default function UpdateSessionPage() {
   const router = useRouter();
   const params = useParams(); // Get params from the URL
