@@ -21,7 +21,7 @@ export default function AddBatchPage() {
     if (!authToken) {
       router.push("/auth/login");
     }
-  }, [router]);
+  }, [router, authToken]);
 
   const handleAddStudents = () => {
     const newStudents = studentInput

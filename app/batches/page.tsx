@@ -55,7 +55,7 @@ export default function BatchesPage() {
     batch.batchLabel.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleDelete = (batchId: string, batchLabel: string) => {
+  const handleDelete = (batchId: string) => {
     setSelectedBatch(batchId);
     setShowDeleteModal(true);
   };
@@ -65,7 +65,7 @@ export default function BatchesPage() {
     
     setDeleteLoading(true);
     try {
-      await deleteBatch(selectedBatch, authToken!, userId!);
+      await deleteBatch(selectedBatch, authToken!);
       setShowDeleteModal(false);
       setSelectedBatch(null);
       setSuccessMessage("Batch deleted successfully");
@@ -83,10 +83,6 @@ export default function BatchesPage() {
 
   const handleEdit = (batchId: string) => {
     router.push(`/batches/edit/${batchId}`);
-  };
-
-  const handleAddNew = () => {
-    router.push("/batches/add");
   };
 
   const getBatchStatusColor = (studentCount: number) => {
@@ -301,7 +297,7 @@ export default function BatchesPage() {
                             Edit
                           </button>
                           <button
-                            onClick={() => handleDelete(batch.batchID, batch.batchLabel)}
+                            onClick={() => handleDelete(batch.batchID)}
                             className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                           >
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

@@ -1,7 +1,6 @@
-// api/batch.ts - Server Component
 "use server"
 
-export async function fetchBatches(authToken : string, userID : String) {
+export async function fetchBatches(authToken : string, userID : string) {
 
     console.log("got this->" + authToken);
     console.log("got this->" + userID);
