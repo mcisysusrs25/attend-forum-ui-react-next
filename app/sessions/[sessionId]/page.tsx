@@ -8,7 +8,6 @@ import { getSessionAuthToken } from '@/app/utils/authSession';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 
-// Define the Session interface
 interface Session {
   _id: string;
   sessionTitle: string;
@@ -28,7 +27,6 @@ interface Session {
   sessionCreatedDateTime: string;
   __v: number;
 }
-
 export default function SessionDetails() {
   const params = useParams();
   const router = useRouter();

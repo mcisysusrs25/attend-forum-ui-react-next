@@ -1,5 +1,13 @@
 "use server"
 
+
+// Define a Subject type
+type Subject = {
+  subjectCode: string;
+  title: string;
+  professorID: string;
+};
+
 export async function fetchSubjects(userID: string, authToken: string) {
     try {
       if (!authToken) {
@@ -56,7 +64,7 @@ export async function deleteSubject(subjectId: string, authToken: string) {
   }
 }
 
-export async function addSubject(subjectData: any, authToken: string) {
+export async function addSubject(subjectData: Subject, authToken: string) {
     try {
       if (!authToken) {
         throw new Error('Unauthorized');
