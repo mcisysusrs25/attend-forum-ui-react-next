@@ -2,15 +2,11 @@
 
 "use server"
 
-
 type ConfigPayload = {
     label: string;
     latitude: string;
     longitude: string;}
   
-
-// { label: "", latitude: "", longitude: "" }
-
 
 export async function fetchClassroomConfigurations(authToken: string, userId: string) {
 
@@ -60,14 +56,12 @@ export async function deleteClassroomConfiguration(authToken: string, id: string
     }
 }
 
-
-// api/classroomConfigApi.ts
-
 export async function createClassroomConfig(newConfig: ConfigPayload, authToken: string) {
-    const apiUrl = 'http://localhost:5000/api/class-configurations/create';
+    
+    const api_url = `${process.env.API_BASE_URL}/class-configurations/create`;
 
     try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch(api_url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -89,7 +83,8 @@ export async function createClassroomConfig(newConfig: ConfigPayload, authToken:
 
 
 export async function fetchClassroomConfig(classConfigId: string, authToken: string) {
-    const apiUrl = `http://localhost:5000/api/class-configurations/${classConfigId}`;
+
+    const apiUrl = `${process.env.API_BASE_URL}/class-configurations/${classConfigId}`;
 
     try {
         const response = await fetch(apiUrl, {
@@ -104,7 +99,7 @@ export async function fetchClassroomConfig(classConfigId: string, authToken: str
 };
 
 export async function updateClassroomConfig (classConfigId: string, configData: ConfigPayload, authToken: string){
-    const apiUrl = `http://localhost:5000/api/class-configurations/update/${classConfigId}`;
+    const apiUrl = `${process.env.API_BASE_URL}/class-configurations/update/${classConfigId}`;
 
     try {
         const response = await fetch(apiUrl, {
