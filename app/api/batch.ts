@@ -27,7 +27,7 @@ export async function fetchBatches(authToken : string, userID : string) {
     return response.json();
 }
 
-export async function deleteBatch(batchId: string, authToken : string, userID : string) {
+export async function deleteBatch(batchId: string, authToken : string) {
 
     if (!authToken) {
         throw new Error("Unauthorized: Missing auth token");
@@ -50,7 +50,6 @@ export async function deleteBatch(batchId: string, authToken : string, userID : 
 }
 export async function createBatch(batchLabel: string, students: string[], authToken:string, userID: string) {
     
-
     console.log(authToken);
     console.log(userID);
 
@@ -101,7 +100,6 @@ export async function editBatch(batchID: string, studentsToAdd: string[], studen
             batchID,
             studentsToAdd,
             studentsToRemove,
-            updatedBy: userID, // Optional: Track who made the update
         }),
     });
 
@@ -113,9 +111,8 @@ export async function editBatch(batchID: string, studentsToAdd: string[], studen
     return response.json();
 }
 
-
-
 export const fetchBatchDetails = async (batchID: string, authToken: string) => {
+
     const response = await fetch(`${process.env.API_BASE_URL}/batches/details/${batchID}`, {
       headers: { Authorization: `Bearer ${authToken}` },
     });
