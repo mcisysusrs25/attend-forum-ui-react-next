@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSessionAuthToken, getUserId } from "../utils/authSession";
-import { deleteClassroomConfiguration, fetchClassroomConfigurations } from "@/app/api/config";
+import { deleteClassroomConfiguration, fetchClasssConfigurationsByProfessorID } from "@/app/api/config";
 
 interface Classroom {
   _id?: string;
@@ -36,9 +36,9 @@ export default function ClassroomConfig() {
       }
       
       try {
-        const result = await fetchClassroomConfigurations(authToken, userId);
+        const result = await fetchClasssConfigurationsByProfessorID(authToken, userId);
         console.log(result);
-        setConfigurations(result.data || []);
+        setConfigurations(result?.data || []);
       } catch (err) {
         console.error('Error fetching configurations:', err);
         setError(err instanceof Error ? err.message : 'Failed to load classroom configurations');

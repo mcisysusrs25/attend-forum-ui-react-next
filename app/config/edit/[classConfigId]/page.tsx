@@ -4,24 +4,30 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getSessionAuthToken } from "@/app/utils/authSession";
+import { getSessionAuthToken, getUserId } from "@/app/utils/authSession";
 import { fetchClassroomConfig, updateClassroomConfig } from "@/app/api/config";
 
 
 export default function EditConfigPage() {
   const router = useRouter();
   const { classConfigId } = useParams();
-  const [configData, setConfigData] = useState({ label: "", latitude: "", longitude: "" });
+  const [configData, setConfigData] = useState({ label: "", latitude: "", longitude: "", userID: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const authToken = getSessionAuthToken();
-    if (!authToken) {
+    const userID = getUserId();
+    
+
+    if (!authToken && !userID) {
       router.push("/auth/login");
       return;
     }
-    fetchClassroomConfig(classConfigId as string, authToken)
+
+    setConfigData({ label: "", latitude: "", longitude: "", userID: userID! });
+
+    fetchClassroomConfig(classConfigId as string, authToken!)
       .then((data) => setConfigData(data.data))
       .catch((err) => setError(err.message));
   }, [router, classConfigId]);

@@ -31,7 +31,9 @@ import { createClassroomConfig } from "@/app/api/config";
        label,
        latitude: latitude.toString(),
        longitude: longitude.toString(),
+       userID:userId
      };
+
  
      try {
        await createClassroomConfig(newConfig, authToken);
