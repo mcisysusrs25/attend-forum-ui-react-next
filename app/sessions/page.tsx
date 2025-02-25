@@ -25,7 +25,6 @@ export default function AttendancePage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'active' | 'completed' | 'new'>('active');
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrCodeDataUrl, setQRCodeDataUrl] = useState('');
@@ -83,7 +82,7 @@ export default function AttendancePage() {
         setSessions(data);
         setFilteredSessions(data.filter((session: Session) => session.sessionStatus === filter));
       } catch (error) {
-        setError(error instanceof Error ? error.message : 'An error occurred');
+        console.log(error);
       } finally {
         setLoading(false);
       }
@@ -171,7 +170,6 @@ export default function AttendancePage() {
         );
       } catch (error) {
         console.error('Status update error:', error);
-        setError(error instanceof Error ? error.message : 'An error occurred');
       }
     }
   };
@@ -192,7 +190,6 @@ export default function AttendancePage() {
         );
       } catch (error) {
         console.error('Delete error:', error);
-        setError(error instanceof Error ? error.message : 'An error occurred');
       }
     }
   };

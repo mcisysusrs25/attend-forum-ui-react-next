@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
 import { fetchSubjects, deleteSubject } from '@/app/api/subject';
-import { PlusCircle, Edit2, Trash2, BookOpen, Clock, Award } from 'lucide-react';
+import {  Edit2, Trash2, BookOpen } from 'lucide-react';
 
 interface Subject {
   _id: string;

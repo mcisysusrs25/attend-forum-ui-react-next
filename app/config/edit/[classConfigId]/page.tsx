@@ -88,7 +88,8 @@ export default function EditConfigPage() {
           });
         },
         (error) => {
-          setError("Unable to retrieve your location. Please allow location access.");
+          console.log(error);
+          setError(error.message);
         }
       );
     } else {

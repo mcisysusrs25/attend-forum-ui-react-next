@@ -11,6 +11,7 @@ export default function AddClassroomConfig() {
   const [longitude, setLongitude] = useState<number | string>("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
   const apiUrl = 'http://localhost:5000/api/class-configurations/create'; // Updated API URL
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -65,6 +66,7 @@ export default function AddClassroomConfig() {
           setLongitude(position.coords.longitude);
         },
         (error) => {
+          console.log(error);
           setError('Unable to retrieve location. Please enable location services.');
         }
       );
