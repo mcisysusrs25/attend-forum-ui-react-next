@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createBatch } from "@/app/api/batch";
 import { getSessionAuthToken, getUserId } from "@/app/utils/authSession";
-import { getCurrentEnv } from "@/app/utils/nodeEnv";
 
 export default function AddBatchPage() {
   const router = useRouter();
@@ -12,22 +12,22 @@ export default function AddBatchPage() {
   const [students, setStudents] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const apiUrl = `${getCurrentEnv("dev")}/batches/create`;
+  
+  const authToken = getSessionAuthToken();
+  const userID = getUserId();
 
   useEffect(() => {
-    const authToken = getSessionAuthToken();
+
     if (!authToken) {
       router.push("/auth/login");
     }
   }, [router]);
 
-  // Add students to the table
   const handleAddStudents = () => {
     const newStudents = studentInput
       .split(",")
       .map((id) => id.trim().toUpperCase())
-      .filter((id) => id && !students.includes(id)); // Prevent duplicates
+      .filter((id) => id && !students.includes(id));
 
     if (newStudents.length > 0) {
       setStudents((prev) => [...prev, ...newStudents]);
@@ -35,45 +35,17 @@ export default function AddBatchPage() {
     setStudentInput("");
   };
 
-  // Remove a student from the table
   const handleRemoveStudent = (id: string) => {
     setStudents((prev) => prev.filter((student) => student !== id));
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const authToken = getSessionAuthToken();
-    const userID = getUserId();
-
-    if (!authToken || !userID) {
-      setError("User is not authenticated. Please log in again.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          batchLabel,
-          createdBy: userID,
-          students,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || "Failed to add batch");
-      }
-
+      await createBatch(batchLabel, students, authToken!, userID!);
       router.push("/batches");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -101,7 +73,6 @@ export default function AddBatchPage() {
         {error && <p className="mb-4 text-red-500">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Batch Label Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Batch Label</label>
             <input
@@ -113,7 +84,6 @@ export default function AddBatchPage() {
             />
           </div>
 
-          {/* Student ID Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Student IDs (Comma-separated)</label>
             <div className="flex space-x-2">
@@ -134,7 +104,6 @@ export default function AddBatchPage() {
             </div>
           </div>
 
-          {/* Students Table */}
           {students.length > 0 && (
             <div className="mt-4">
               <h3 className="text-lg font-semibold mb-2">Added Students</h3>
@@ -169,7 +138,6 @@ export default function AddBatchPage() {
             </div>
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={students.length === 0}

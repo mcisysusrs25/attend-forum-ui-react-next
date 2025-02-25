@@ -1,8 +1,8 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSessionAuthToken, getUserId } from "../utils/authSession";
+import { deleteClassroomConfiguration, fetchClassroomConfigurations } from "@/app/api/config";
 
 interface Classroom {
   _id?: string;
@@ -20,12 +20,10 @@ export default function ClassroomConfig() {
   const [configurations, setConfigurations] = useState<Classroom[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [fetchTrigger, setFetchTrigger] = useState<number>(0); // Trigger to refetch data
-  const apiUrl = 'http://localhost:5000/api';
+  const [fetchTrigger, setFetchTrigger] = useState<number>(0);
 
-  // Fetch configurations from the API with authentication
   useEffect(() => {
-    const fetchConfigurations = async () => {
+    const loadConfigurations = async () => {
       setIsLoading(true);
       setError(null);
       
@@ -38,20 +36,8 @@ export default function ClassroomConfig() {
       }
       
       try {
-        const response = await fetch(`${apiUrl}/class-configurations`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${authToken}`,
-          }
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch configurations');
-        }
-        
-        const result = await response.json();
+        const result = await fetchClassroomConfigurations(authToken, userId);
+        console.log(result);
         setConfigurations(result.data || []);
       } catch (err) {
         console.error('Error fetching configurations:', err);
@@ -61,33 +47,19 @@ export default function ClassroomConfig() {
       }
     };
 
-    fetchConfigurations();
-  }, [fetchTrigger, router, apiUrl]); // Re-fetch when fetchTrigger changes
+    loadConfigurations();
+  }, [fetchTrigger, router]);
 
-  const deleteConfiguration = async (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this configuration?")) {
       try {
         setIsLoading(true);
-        
         const authToken = getSessionAuthToken();
         if (!authToken) {
           router.push("/auth/login");
           return;
         }
-        
-        const response = await fetch(`${apiUrl}/class-configurations/delete/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-          }
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to delete configuration');
-        }
-        
-        // Increment fetchTrigger to re-fetch configurations
+        await deleteClassroomConfiguration(authToken, id);
         setFetchTrigger((prev) => prev + 1);
       } catch (error) {
         console.error('Error deleting configuration:', error);
@@ -140,7 +112,7 @@ export default function ClassroomConfig() {
                 </button>
                 <button 
                   className="text-red-500 hover:text-red-700"
-                  onClick={() => deleteConfiguration(config.classConfigId!)}
+                  onClick={() => handleDelete(config.classConfigId!)}
                 >
                   Delete
                 </button>

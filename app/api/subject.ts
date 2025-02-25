@@ -1,6 +1,5 @@
 "use server"
 
-
 // Define a Subject type
 type Subject = {
   subjectCode: string;
