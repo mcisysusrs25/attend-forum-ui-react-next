@@ -123,6 +123,7 @@ export async function updateClassroomConfig (classConfigId: string, configData: 
             // throw new Error(errorData?.message || "Failed to update configuration");
         }
     } catch (err) {
+        console.log(err);
         // throw new Error(err instanceof Error ? err.message : "An error occurred");
     }
 };

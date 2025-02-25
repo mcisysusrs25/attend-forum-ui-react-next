@@ -53,6 +53,7 @@ export async function deleteSubject(subjectId: string, authToken: string) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log(errorData);
       // throw new Error(errorData.message || 'Failed to delete subject');
     }
 
@@ -85,6 +86,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.log(errorData);
         // throw new Error(errorData.message || 'Failed to add subject');
       }
       
@@ -98,6 +100,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
   export async function updateSubject(subjectCode: string, subjectTitle: string, authToken: string) {
     try {
       if (!authToken) {
+        console.log("un authorized access");
         // throw new Error('Unauthorized');
       }
   
@@ -120,6 +123,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
   
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.log(errorData);
         // throw new Error(errorData.message || 'Failed to update subject');
       }
   
@@ -151,6 +155,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
   
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.log(errorData);
         console.error('Fetch failed with status:', response.status, 'Message:', errorData.message);
         // throw new Error(errorData.message || 'Failed to fetch subject');
       }
