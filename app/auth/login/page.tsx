@@ -124,7 +124,7 @@ const AuthPage = () => {
               <p className="font-medium">Registration Information</p>
               <ul className="mt-2 list-disc pl-5">
                 <li>Your Professor ID must be in UPPERCASE format</li>
-                <li>After registration, you'll be automatically redirected to login</li>
+                <li>After registration, you will be automatically redirected to login</li>
                 <li>Your credentials will be securely stored</li>
               </ul>
             </div>
