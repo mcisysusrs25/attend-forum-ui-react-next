@@ -182,8 +182,11 @@ export async function fetchSessions(userType: string, userID: string, authToken:
     sessionValidTo: string;
     subjectCode: string;
     batchID: string;
+    classConfigId : string,
     createdBy: string;
   }, authToken: string) {
+
+    console.log("this is sending as " + sessionData.classConfigId);
     try {
       const response = await fetch(`${process.env.API_BASE_URL}/sessions/add`, {
         method: 'POST',
@@ -245,6 +248,7 @@ export async function updateSession(
     sessionValidTo: string;
     subjectCode: string;
     batchID: string;
+    classConfigId: string,
     createdBy: string;
   },
   authToken: string

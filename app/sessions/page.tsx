@@ -15,6 +15,7 @@ interface Session {
   sessionValidTo: string;
   sessionStatus: string;
   subjectCode: string;
+  classConfigId: string,
   createdBy: string;
   sessionID: string;
   __v: number;
@@ -303,6 +304,11 @@ export default function AttendancePage() {
 
                       <p className="text-gray-600">
                         {session.sessionDescription}
+                      </p>
+
+
+                      <p className="text-gray-600">
+                        {session.classConfigId}
                       </p>
 
                       <div className="grid grid-cols-2 gap-6 pt-2">

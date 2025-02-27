@@ -12,7 +12,7 @@ const professorNavigation = [
   { name: 'My Sessions', href: '/sessions' },
   { name: 'My Subjects', href: '/subjects' },
   { name: 'My Batches', href: '/batches' },
-  { name: 'Class Configuration', href: '/config' },
+  { name: 'My Classes', href: '/config' },
 ]
 
 const studentNavigation = [
@@ -215,12 +215,13 @@ export default function Navbar() {
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">{currentPage}</h1>
 
           {/* Conditionally add an "Add" button for My Sessions, My Subjects, My Batches */}
-          {user.userType === 'professor' && ['My Sessions', 'My Subjects', 'My Batches'].includes(currentPage) && (
+          {user.userType === 'professor' && ['My Sessions', 'My Subjects', 'My Batches', 'My Classes'].includes(currentPage) && (
             <Link
               href={{
                 'My Sessions': '/sessions/add-session',
                 'My Subjects': '/subjects/add-subject',
-                'My Batches': '/batches/add-batch'
+                'My Batches': '/batches/add-batch',
+                'My Classes': '/config/add'
               }[currentPage] || '#'}
               className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
             >

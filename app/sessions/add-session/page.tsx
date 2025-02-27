@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
 import { fetchBatchesByProfessorId, fetchSubjectsByProfessorId, addSession } from '@/app/api/session';
+import { fetchClasssConfigurationsByProfessorID } from '@/app/api/config';
 
 interface Batch {
   _id: string;
@@ -11,6 +12,19 @@ interface Batch {
   batchID: string;
   createdBy: string;
   students: string[];
+  classConfigId: string;  // Added classConfigId to the Batch interface
+}
+
+// Define Classroom Interface
+interface Classroom {
+  _id?: string;
+  latitude: number;
+  longitude: number;
+  label: string;
+  classConfigId?: string;
+  createdAt?: string;
+  updatedAt?: string; 
+  __v?: number;
 }
 
 interface Subject {
@@ -33,6 +47,7 @@ interface SessionData {
   sessionValidTo: string;
   subjectCode: string;
   batchID: string;
+  classConfigId: string;
   createdBy: string;
 }
 
@@ -44,10 +59,13 @@ export default function AddSessionPage() {
   const [sessionValidTo, setSessionValidTo] = useState('');
   const [subjectCode, setSubjectCode] = useState('');
   const [batchID, setBatchID] = useState('');
+  const [classConfigId, setClassConfigId] = useState('');  // State for storing selected classConfigId
   const [batches, setBatches] = useState<Batch[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [classConfigurations, setClassConfigurations] = useState<Classroom[]>([]); // Initializing as an empty array
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
+  const [selectedConfig, setSelectedConfig] = useState<Classroom | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -63,7 +81,7 @@ export default function AddSessionPage() {
   useEffect(() => {
     const now = new Date();
     const twentyMinsLater = new Date(now.getTime() + 20 * 60000);
-    
+
     setSessionValidFrom(formatDateForInput(now));
     setSessionValidTo(formatDateForInput(twentyMinsLater));
   }, []);
@@ -76,16 +94,20 @@ export default function AddSessionPage() {
     }
   }, [authToken, router]);
 
-  // Fetch batches for the professor
+  // Fetch batches, subjects, and class configurations for the professor
   useEffect(() => {
     if (!authToken || !userID) return;
 
     const fetchData = async () => {
       try {
+
+        const configData = await fetchClasssConfigurationsByProfessorID(authToken, userID);
+        setClassConfigurations(configData?.data || []);
         const batchesData = await fetchBatchesByProfessorId(userID, authToken);
         const subjectsData = await fetchSubjectsByProfessorId(userID, authToken);
         setBatches(batchesData);
         setSubjects(subjectsData);
+
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error instanceof Error ? error.message : 'An error occurred');
@@ -95,7 +117,6 @@ export default function AddSessionPage() {
     fetchData();
   }, [authToken, userID]);
 
-  // Update selected objects when IDs change
   useEffect(() => {
     if (subjectCode) {
       const subject = subjects.find(s => s.subjectCode === subjectCode);
@@ -103,22 +124,29 @@ export default function AddSessionPage() {
     } else {
       setSelectedSubject(null);
     }
-    
+
     if (batchID) {
       const batch = batches.find(b => b.batchID === batchID);
       setSelectedBatch(batch || null);
     } else {
       setSelectedBatch(null);
     }
-  }, [subjectCode, batchID, subjects, batches]);
 
-  // Generate title and description when all required fields are selected
+    if (classConfigId) {
+      const config = classConfigurations.find(c => c.classConfigId === classConfigId);
+      setSelectedConfig(config || null);
+    } else {
+      setSelectedConfig(null);
+    }
+  }, [subjectCode, batchID, classConfigId, subjects, batches, classConfigurations]);
+
+
   useEffect(() => {
-    if (selectedSubject && selectedBatch && sessionValidFrom && sessionValidTo) {
+    if (selectedSubject && selectedBatch && selectedConfig && sessionValidFrom && sessionValidTo) {
       // Format dates for display
       const startDate = new Date(sessionValidFrom);
       const endDate = new Date(sessionValidTo);
-      
+
       const formattedStart = startDate.toLocaleString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -126,58 +154,22 @@ export default function AddSessionPage() {
         minute: 'numeric',
         hour12: true
       });
-      
+
       const formattedEnd = endDate.toLocaleString('en-US', {
         hour: 'numeric',
         minute: 'numeric',
         hour12: true
       });
-      
+
       // Generate title
-      const newTitle = `${selectedSubject.title} - ${selectedBatch.batchLabel}`;
+      const newTitle = `${selectedSubject.title} - ${selectedBatch.batchLabel} - ${selectedConfig.label}`;
       setSessionTitle(newTitle);
-      
+
       // Generate description
       const newDescription = `Session for ${selectedSubject.title} (${selectedSubject.subjectCode}) with ${selectedBatch.batchLabel} on ${formattedStart} to ${formattedEnd}.`;
       setSessionDescription(newDescription);
     }
-  }, [selectedSubject, selectedBatch, sessionValidFrom, sessionValidTo]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    if (!authToken || !userID) {
-      console.log('User is not authenticated');
-      setError('User is not authenticated. Please log in again.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const sessionData: SessionData = {
-        sessionTitle,
-        sessionDescription,
-        sessionValidFrom,
-        sessionValidTo,
-        subjectCode,
-        batchID,
-        createdBy: userID,
-      };
-
-      await addSession(sessionData, authToken);
-
-      // Redirect after successful submission
-      console.log('Session added successfully, redirecting to sessions');
-      router.push('/sessions#new');
-    } catch (error) {
-      console.error('Error adding session:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [selectedSubject, selectedBatch, classConfigId, sessionValidFrom, sessionValidTo]);
 
   if (loading) {
     return (
@@ -190,11 +182,56 @@ export default function AddSessionPage() {
     );
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+  
+    if (!authToken || !userID) {
+      console.log('User is not authenticated');
+      setError('User is not authenticated. Please log in again.');
+      setLoading(false);
+      return;
+    }
+  
+    const startDate = new Date(sessionValidFrom);
+    const endDate = new Date(sessionValidTo);
+  
+    if (startDate >= endDate) {
+      setError('Session start time must be before end time.');
+      setLoading(false);
+      return;
+    }
+  
+    try {
+      const sessionData: SessionData = {
+        sessionTitle,
+        sessionDescription,
+        sessionValidFrom,
+        sessionValidTo,
+        subjectCode,
+        batchID,
+        classConfigId,
+        createdBy: userID,
+      };
+  
+      await addSession(sessionData, authToken);
+  
+      console.log('Session added successfully, redirecting to sessions');
+      router.push('/sessions#new');
+    } catch (error) {
+      console.error('Error adding session:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-        <button 
-          onClick={() => router.push('/sessions')} 
+        <button
+          onClick={() => router.push('/sessions')}
           className="flex items-center text-blue-500 mb-4"
           type="button"
         >
@@ -205,10 +242,10 @@ export default function AddSessionPage() {
             fill="currentColor"
             aria-hidden="true"
           >
-            <path 
-              fillRule="evenodd" 
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z" 
-              clipRule="evenodd" 
+            <path
+              fillRule="evenodd"
+              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z"
+              clipRule="evenodd"
             />
           </svg>
           Back to List
@@ -224,9 +261,9 @@ export default function AddSessionPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-medium mb-4">Step 1: Select Subject and Batch</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h3 className="text-lg font-medium mb-4">Step 1: Select Subject, Batch, and Configuration</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
                 <select
@@ -255,17 +292,39 @@ export default function AddSessionPage() {
                   <option value="">Select a batch</option>
                   {batches.map((batch) => (
                     <option key={batch._id} value={batch.batchID}>
-                      {batch.batchLabel} (ID: {batch.batchID})
+                      {batch.batchLabel}
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Select Class Location</label>
+                <select
+                  value={classConfigId}
+                  onChange={(e) => setClassConfigId(e.target.value)}
+                  required
+                  className="block w-full border border-gray-300 rounded-md p-2 bg-white"
+                >
+                  <option value="">Select a class configuration</option>
+                  {classConfigurations.length > 0 ? (
+                    classConfigurations.map((config) => (
+                      <option key={config._id} value={config.classConfigId}>
+                        {config.label}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No class configurations available</option>
+                  )}
+                </select>
+
               </div>
             </div>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-lg font-medium mb-4">Step 2: Set Session Timing</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Session Start Time *</label>
@@ -293,7 +352,7 @@ export default function AddSessionPage() {
 
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-lg font-medium mb-4">Step 3: Review Auto-Generated Information</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Session Title</label>
@@ -315,7 +374,6 @@ export default function AddSessionPage() {
                   value={sessionDescription}
                   onChange={(e) => setSessionDescription(e.target.value)}
                   required
-                  rows={3}
                   className="block w-full border border-gray-300 rounded-md p-2"
                 />
                 <p className="text-sm text-gray-500 mt-1">
@@ -325,20 +383,13 @@ export default function AddSessionPage() {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => router.push('/sessions')}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors duration-300"
-            >
-              Cancel
-            </button>
+          <div className="flex justify-between items-center py-4">
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-300"
-              disabled={!subjectCode || !batchID || !sessionValidFrom || !sessionValidTo}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+              disabled={loading}
             >
-              Create Session
+              {loading ? 'Submitting...' : 'Add Session'}
             </button>
           </div>
         </form>

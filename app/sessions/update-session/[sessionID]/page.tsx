@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
 import { fetchSessionDetails, updateSession, fetchBatches, fetchSubjects } from '@/app/api/session';
+import { fetchClasssConfigurationsByProfessorID } from '@/app/api/config';
 
 interface Batch {
   _id: string;
@@ -26,6 +27,19 @@ interface Subject {
   __v: number;
 }
 
+
+// Define Classroom Interface
+interface Classroom {
+  _id?: string;
+  latitude: number;
+  longitude: number;
+  label: string;
+  classConfigId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+}
+
 export default function UpdateSessionPage() {
   const router = useRouter();
   const params = useParams(); // Get params from the URL
@@ -39,11 +53,15 @@ export default function UpdateSessionPage() {
   const [batches, setBatches] = useState<Batch[]>([]); // List of batches
   const [subjects, setSubjects] = useState<Subject[]>([]); // List of subjects
   const [error, setError] = useState<string | null>(null);
+
+  const [classConfigId, setClassConfigId] = useState(''); // Selected batchID
+  const [configs, setConfigs] = useState<Classroom[]>([]); // List of batches
   
   // Loading state controls
   const [loadingSession, setLoadingSession] = useState(true);
   const [loadingBatches, setLoadingBatches] = useState(true);
   const [loadingSubjects, setLoadingSubjects] = useState(true);
+  const [loadingConfigs, setLoadingConfigs] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const authToken = getSessionAuthToken();
@@ -76,6 +94,11 @@ export default function UpdateSessionPage() {
         setSessionValidTo(formatDateTime(session.sessionValidTo));
         setSubjectCode(session.subjectCode);
         setBatchID(session.batchID);
+        setClassConfigId(session.classConfigId);
+        
+        console.log("sessions confid it to test");
+        console.log(session.classConfigId);
+
       } catch (error) {
         console.error('Error fetching session details:', error);
         setError(error instanceof Error ? error.message : 'An error occurred');
@@ -131,6 +154,30 @@ export default function UpdateSessionPage() {
     loadSubjects();
   }, [authToken, userID]);
 
+
+    // Fetch configs for the professor
+    useEffect(() => {
+      if (!authToken || !userID) {
+        return;
+      }
+  
+      const loadConfigs = async () => {
+        try {
+          setLoadingConfigs(true);
+          const resultsConfig = await fetchClasssConfigurationsByProfessorID(authToken, userID);
+          setConfigs(resultsConfig?.data || []);
+          console.log(configs);
+        } catch (error) {
+          console.error('Error fetching Class configs:', error);
+          setError(error instanceof Error ? error.message : 'An error occurred');
+        } finally {
+          setLoadingConfigs(false);
+        }
+      };
+  
+      loadConfigs();
+    }, [authToken, userID]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -150,6 +197,7 @@ export default function UpdateSessionPage() {
         sessionValidTo,
         subjectCode,
         batchID,
+        classConfigId,
         createdBy: userID,
       };
 
@@ -166,7 +214,7 @@ export default function UpdateSessionPage() {
   };
 
   // Check if any data is still loading
-  const isLoading = loadingSession || loadingBatches || loadingSubjects;
+  const isLoading = loadingSession || loadingBatches || loadingSubjects || loadingConfigs;
 
   // Skeleton loading component
   const SkeletonForm = () => (
@@ -293,6 +341,24 @@ export default function UpdateSessionPage() {
                 {batches.map((batch) => (
                   <option key={batch.batchID} value={batch.batchID}>
                     {batch.batchLabel} (ID: {batch.batchID})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Select Class</label>
+              <select
+                value={classConfigId}
+                onChange={(e) => setClassConfigId(e.target.value)}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                disabled={submitting}
+              >
+                <option value="">Select a Class</option>
+                {configs.map((config) => (
+                  <option key={config.classConfigId} value={config.classConfigId}>
+                    {config.label}
                   </option>
                 ))}
               </select>
