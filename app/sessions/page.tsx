@@ -109,7 +109,7 @@ export default function AttendancePage() {
 
   // Generate QR code
   const openQRModal = async (sessionID: string) => {
-    const url = `${window.location.origin}/sessions/${sessionID}`;
+    const url = `https://mcisysusrs25.github.io/attendforumstudent/sessionDetails.html?sessionID=${sessionID}`;
     try {
       const dataUrl = await QRCode.toDataURL(url, { errorCorrectionLevel: 'H', width: 256 });
       setQRCodeDataUrl(dataUrl);
@@ -122,7 +122,9 @@ export default function AttendancePage() {
 
   // Copy link to clipboard
   const copyLinkToClipboard = (sessionID: string) => {
-    const link = `${window.location.origin}/sessions/attendance/${sessionID}`;
+  
+
+    const link = `https://mcisysusrs25.github.io/attendforumstudent/sessionDetails.html?sessionID=${sessionID}`;
     navigator.clipboard.writeText(link).then(() => {
       alert('Link copied to clipboard!');
     }).catch(() => {

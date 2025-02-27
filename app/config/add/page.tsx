@@ -34,7 +34,6 @@ import { createClassroomConfig } from "@/app/api/config";
        userID:userId
      };
 
- 
      try {
        await createClassroomConfig(newConfig, authToken);
        router.push("/config");

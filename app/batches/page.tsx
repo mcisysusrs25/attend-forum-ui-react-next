@@ -43,7 +43,6 @@ export default function BatchesPage() {
         setLoading(false);
       }
     };
-
     if (authToken && userId) {
       loadBatches();
     } else {
