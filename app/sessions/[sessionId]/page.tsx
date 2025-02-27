@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import { useParams, useRouter } from 'next/navigation';
@@ -711,6 +713,7 @@ export default function SessionDetails() {
             </>
           )}
         </div>
+
       </div>
     </div>
   );
