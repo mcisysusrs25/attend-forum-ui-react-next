@@ -230,28 +230,18 @@ export default function AddSessionPage() {
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-        <button
-          onClick={() => router.push('/sessions')}
-          className="flex items-center text-blue-500 mb-4"
-          type="button"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Back to List
-        </button>
+      <button
+                type="button"
+                onClick={() => router.push("/sessions")}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Sessions
+              </button>
 
-        <h2 className="text-2xl font-bold mb-4">Add New Session</h2>
+        <h2 className="text-2xl font-bold mb-4 mt-4">Add New Session</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -386,7 +376,7 @@ export default function AddSessionPage() {
           <div className="flex justify-between items-center py-4">
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+              className="px-4 py-2 bg-indigo-700 text-white rounded-lg"
               disabled={loading}
             >
               {loading ? 'Submitting...' : 'Add Session'}

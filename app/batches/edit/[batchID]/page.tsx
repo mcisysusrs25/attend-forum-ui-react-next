@@ -110,10 +110,10 @@ export default function EditBatchPage() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
-      <div className="mx-auto max-w-4xl px-6 sm:px-8 py-8">
+    <div className="bg-white min-h-screen">
+      <div className="mx-auto sm:px-2">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-blue-600 px-6 py-4">
+          <div className="bg-indigo-700 px-6 py-4">
             <h2 className="text-2xl font-bold text-white">Edit Batch</h2>
           </div>
           

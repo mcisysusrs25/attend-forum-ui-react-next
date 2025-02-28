@@ -12,12 +12,11 @@ export default function AddBatchPage() {
   const [students, setStudents] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  
+
   const authToken = getSessionAuthToken();
   const userID = getUserId();
 
   useEffect(() => {
-
     if (!authToken) {
       router.push("/auth/login");
     }
@@ -54,6 +53,13 @@ export default function AddBatchPage() {
     }
   };
 
+  const handleClearForm = () => {
+    setBatchLabel("");
+    setStudentInput("");
+    setStudents([]);
+    setError(null);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -66,9 +72,21 @@ export default function AddBatchPage() {
   }
 
   return (
-    <div className="bg-white min-h-screen">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6">
-        <h2 className="text-2xl font-bold mb-4">Add New Batch</h2>
+    <div className="bg-white shadow-md rounded-md">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="w-full">
+          <button
+            type="button"
+            onClick={() => router.push("/batches")}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Batches
+          </button>
+        </div>
+        <h2 className="text-2xl font-bold mb-4 mt-4">Add New Batch</h2>
 
         {error && <p className="mb-4 text-red-500">{error}</p>}
 
@@ -126,7 +144,7 @@ export default function AddBatchPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveStudent(id)}
-                          className="text-red-500 hover:underline"
+                          className="bg-red-600 py-2 px-4 text-white rounded-md hover:bg-red-700"
                         >
                           Remove
                         </button>
@@ -138,15 +156,23 @@ export default function AddBatchPage() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={students.length === 0}
-            className={`mt-4 px-4 py-2 text-white rounded transition-colors duration-300 ${
-              students.length === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
-            }`}
-          >
-            Submit Batch
-          </button>
+          <div className="flex space-x-4">
+            <button
+              type="submit"
+              disabled={students.length === 0}
+              className={`mt-4 px-4 py-2 text-white rounded transition-colors duration-300 ${students.length === 0 ? "bg-indigo-700 cursor-not-allowed" : "bg-indigo-700 hover:bg-blue-600"
+                }`}
+            >
+              Submit Batch
+            </button>
+            <button
+              type="button"
+              onClick={handleClearForm}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors duration-300"
+            >
+              Clear Form
+            </button>
+          </div>
         </form>
       </div>
     </div>

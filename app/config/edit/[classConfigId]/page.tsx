@@ -102,7 +102,7 @@ export default function EditConfigPage() {
           </div>
           <div className="flex justify-between">
             <button type="button" onClick={handleGetCurrentLocation} className="mb-6 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Use Current Location</button>
-            <button type="submit" className="mb-6 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Update Configuration</button>
+            <button type="submit" className="mb-6 px-4 py-2 bg-indigo-700 text-white rounded hover:bg-blue-600">Update Configuration</button>
           </div>
         </form>
       </div>

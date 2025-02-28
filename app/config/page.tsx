@@ -72,7 +72,7 @@ export default function ClassroomConfig() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-8 bg-white shadow-xl rounded-xl">
+    <div className="mx-auto p-4 bg-white shadow-xl rounded-xl">
 
 
       {isLoading && configurations.length === 0 ? (
@@ -132,14 +132,14 @@ export default function ClassroomConfig() {
               </div>
               <div className="flex space-x-4">
                 <button 
-                  className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-medium"
+                  className="bg-indigo-700 py-2 px-3 rounded-md text-white hover:bg-indigo-600  flex items-center gap-1 font-medium"
                   onClick={() => router.push(`config/edit/${config.classConfigId}`)}
                 >
                   <Edit size={16} />
                   Edit
                 </button>
                 <button 
-                  className="text-red-500 hover:text-red-700 flex items-center gap-1 font-medium"
+                  className="text-white bg-red-700 px-3 py-2 rounded-md hover:bg-red-600 flex items-center gap-1 font-medium"
                   onClick={() => handleDelete(config.classConfigId!)}
                   disabled={deleteInProgress === config.classConfigId}
                 >
