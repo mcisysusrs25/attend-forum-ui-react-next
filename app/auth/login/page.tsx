@@ -41,7 +41,7 @@ const AuthPage = () => {
       if(userID && token){
         router.push('/sessions');
       }
-    }, []);
+    }, [userID, token]);
 
   // Handle automatic switch to login after registration
   useEffect(() => {

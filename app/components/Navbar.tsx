@@ -1,8 +1,7 @@
 "use client"
 
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { XMarkIcon, PlusIcon, ChevronDownIcon, HomeIcon, CalendarIcon, BookOpenIcon, UserGroupIcon, Cog6ToothIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, CalendarIcon, BookOpenIcon, UserGroupIcon, Cog6ToothIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -70,7 +69,6 @@ export default function Sidebar() {
   ]
 
   const navigation = user.userType === 'professor' ? professorNavigation : studentNavigation;
-  const currentPage = navigation.find((item) => pathname === item.href)?.name || 'sessions';
 
   return (
     <div className="flex h-screen bg-gray-50">

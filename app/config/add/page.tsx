@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSessionAuthToken, getUserId } from "@/app/utils/authSession";
 import { createClassroomConfig } from "@/app/api/config";
@@ -225,7 +225,7 @@ export default function AddClassroomConfig() {
           <p className="text-gray-600">
             A classroom configuration defines the physical location of your teaching space. This allows the system to
             automatically track attendance based on student location. Make sure to set the coordinates accurately or use
-            the current location feature when you're physically in the classroom.
+            the current location feature when you are physically in the classroom.
           </p>
         </div>
       </div>

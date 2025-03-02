@@ -332,31 +332,4 @@ const StepCard: React.FC<StepCardProps> = ({ number, title, description }) => {
   );
 };
 
-const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, author, role, image }) => {
-  return (
-    <motion.div
-      className="bg-gray-50 p-6 rounded-xl shadow-md"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="flex items-center mb-4">
-        <Image
-          src={image}
-          alt={author}
-          width={48}
-          height={48}
-          className="rounded-full mr-4"
-        />
-        <div>
-          <h4 className="font-bold text-gray-800">{author}</h4>
-          <p className="text-gray-600 text-sm">{role}</p>
-        </div>
-      </div>
-      <p className="text-gray-700 italic">"{quote}"</p>
-    </motion.div>
-  );
-};
-
 export default LandingPage;
