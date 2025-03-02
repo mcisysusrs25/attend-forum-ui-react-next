@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { registerUser } from '@/app/api/register';
 import { loginUser } from '@/app/api/login';
+import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
 
 const AuthPage = () => {
+
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [professorName, setProfessorName] = useState('');
@@ -31,6 +33,15 @@ const AuthPage = () => {
       setIdError('');
     }
   };
+
+  const userID = getUserId();
+  const token = getSessionAuthToken();
+
+    useEffect(() => {
+      if(userID && token){
+        router.push('/sessions');
+      }
+    }, []);
 
   // Handle automatic switch to login after registration
   useEffect(() => {

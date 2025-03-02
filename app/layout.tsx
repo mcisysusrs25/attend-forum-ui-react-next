@@ -24,6 +24,9 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname()
 
+  // Define routes where the full layout should be skipped
+  const excludedRoutes = ["/", "/auth/login"]
+
   // Mapping routes to dynamic page titles
   const pageTitles: Record<string, string> = {
     "/sessions": "My Sessions",
@@ -32,55 +35,61 @@ export default function RootLayout({
     "/config": "My Classes",
   }
 
+  // Determine the current page title
   const currentPage = pageTitles[pathname] || "Dashboard"
 
   // Mocked user (replace with actual user context)
-  const user = { userType: "professor" } 
+  const user = { userType: "professor" }
 
   return (
     <html lang="en" className="h-full">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full overflow-auto`}>
-        <div className="flex h-full">
-          {/* Sidebar */}
-          <Sidebar />
+        {/* If current route is in the excluded list, render only children */}
+        {excludedRoutes.includes(pathname) ? (
+          children
+        ) : (
+          <div className="flex h-full">
+            {/* Sidebar */}
+            <Sidebar />
 
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col min-h-screen">
-            
-            {/* Dynamic Header */}
-            <header className="bg-white shadow-lg">
-              <div className="px-4 py-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 min-w-0 truncate">
-                  {currentPage}
-                </h1>
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col min-h-screen">
+              
+              {/* Dynamic Header */}
+              <header className="bg-white shadow-lg">
+                <div className="px-4 py-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 min-w-0 truncate">
+                    {currentPage}
+                  </h1>
 
-                {/* Conditionally add an "Add" button for specific pages */}
-                {user.userType === "professor" && ["My Sessions", "My Subjects", "My Batches", "My Classes"].includes(currentPage) && (
-                  <Link
-                    href={{
-                      "My Sessions": "/sessions/add-session",
-                      "My Subjects": "/subjects/add-subject",
-                      "My Batches": "/batches/add-batch",
-                      "My Classes": "/config/add",
-                    }[currentPage] || "#"}
-                    className="inline-flex items-center rounded-md bg-indigo-700 px-4 py-2 text-white text-sm font-medium shadow-sm hover:bg-indigo-800 focus:ring-2 focus:ring-blue-500"
-                  >
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    Add {currentPage.split(" ")[1]}
-                  </Link>
-                )}
+                  {/* Conditionally add an "Add" button for specific pages */}
+                  {user.userType === "professor" && ["My Sessions", "My Subjects", "My Batches", "My Classes"].includes(currentPage) && (
+                    <Link
+                      href={{
+                        "My Sessions": "/sessions/add-session",
+                        "My Subjects": "/subjects/add-subject",
+                        "My Batches": "/batches/add-batch",
+                        "My Classes": "/config/add",
+                      }[currentPage] || "#"}
+                      className="inline-flex items-center rounded-md bg-indigo-700 px-4 py-2 text-white text-sm font-medium shadow-sm hover:bg-indigo-800 focus:ring-2 focus:ring-blue-500"
+                    >
+                      <PlusIcon className="h-5 w-5 mr-2" />
+                      Add {currentPage.split(" ")[1]}
+                    </Link>
+                  )}
+                </div>
+              </header>
+
+              {/* Page Content - Enable Scrolling */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="w-full max-w-full p-4">
+                  {children}
+                </div>
               </div>
-            </header>
 
-            {/* Page Content - Enable Scrolling */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="w-full max-w-full p-4">
-                {children}
-              </div>
             </div>
-
           </div>
-        </div>
+        )}
       </body>
     </html>
   )

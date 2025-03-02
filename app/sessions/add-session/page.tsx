@@ -23,7 +23,7 @@ interface Classroom {
   label: string;
   classConfigId?: string;
   createdAt?: string;
-  updatedAt?: string; 
+  updatedAt?: string;
   __v?: number;
 }
 
@@ -186,23 +186,23 @@ export default function AddSessionPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-  
+
     if (!authToken || !userID) {
       console.log('User is not authenticated');
       setError('User is not authenticated. Please log in again.');
       setLoading(false);
       return;
     }
-  
+
     const startDate = new Date(sessionValidFrom);
     const endDate = new Date(sessionValidTo);
-  
+
     if (startDate >= endDate) {
       setError('Session start time must be before end time.');
       setLoading(false);
       return;
     }
-  
+
     try {
       const sessionData: SessionData = {
         sessionTitle,
@@ -214,9 +214,9 @@ export default function AddSessionPage() {
         classConfigId,
         createdBy: userID,
       };
-  
+
       await addSession(sessionData, authToken);
-  
+
       console.log('Session added successfully, redirecting to sessions');
       router.push('/sessions#new');
     } catch (error) {
@@ -230,16 +230,16 @@ export default function AddSessionPage() {
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-      <button
-                type="button"
-                onClick={() => router.push("/sessions")}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Back to Sessions
-              </button>
+        <button
+          type="button"
+          onClick={() => router.push("/sessions")}
+          className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back to Sessions
+        </button>
 
         <h2 className="text-2xl font-bold mb-4 mt-4">Add New Session</h2>
 
