@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getUserId, getSessionAuthToken, getUserType } from '../utils/authSession';
 import QRCode from 'qrcode';
 import Image from 'next/image';
-import { fetchSessions, updateSessionStatus, deleteSession, markAttendance } from '@/app/api/session';
+import { fetchSessions, updateSessionStatus, deleteSession } from '@/app/api/session';
 
 interface Session {
   _id: string;
