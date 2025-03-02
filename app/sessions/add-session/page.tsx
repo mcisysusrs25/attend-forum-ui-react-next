@@ -169,7 +169,7 @@ export default function AddSessionPage() {
       const newDescription = `Session for ${selectedSubject.title} (${selectedSubject.subjectCode}) with ${selectedBatch.batchLabel} on ${formattedStart} to ${formattedEnd}.`;
       setSessionDescription(newDescription);
     }
-  }, [selectedSubject, selectedBatch, classConfigId, sessionValidFrom, sessionValidTo]);
+  }, [selectedSubject, selectedBatch, selectedConfig, sessionValidFrom, sessionValidTo]);
 
   if (loading) {
     return (

@@ -29,9 +29,6 @@ export default function AttendancePage() {
   const [filter, setFilter] = useState<'active' | 'completed' | 'new'>('active');
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrCodeDataUrl, setQRCodeDataUrl] = useState('');
-  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
-  const [attendanceError, setAttendanceError] = useState<string | null>(null);
-  const [currentSessionId, setCurrentSessionId] = useState<string>('');
   const [isMounted, setIsMounted] = useState(false);
 
   // Fetch user data with useEffect to prevent hydration errors
@@ -133,27 +130,6 @@ export default function AttendancePage() {
     });
   };
 
-  // Mark attendance
-  const handleMarkAttendance = async (sessionID: string) => {
-    try {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          await markAttendance(sessionID, latitude, longitude, authToken!);
-          alert('Attendance marked successfully!');
-          setShowAttendanceModal(false);
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          setAttendanceError('Geolocation access denied. Please enable location services to mark attendance.');
-        }
-      );
-    } catch (error) {
-      console.error('Attendance error:', error);
-      setAttendanceError(error instanceof Error ? error.message : 'An error occurred while marking attendance.');
-    }
-  };
-
   // Update session status with confirmation
   const handleStatusChange = async (sessionID: string, newStatus: string) => {
     const isConfirmed = window.confirm(
@@ -198,13 +174,6 @@ export default function AttendancePage() {
     }
   };
 
-  // Open attendance modal for a specific session
-  const openAttendanceModal = (sessionID: string) => {
-    setCurrentSessionId(sessionID);
-    setShowAttendanceModal(true);
-  };
-
-  // Skeleton Loading Component
   const SkeletonLoading = () => (
     <div className="space-y-4">
       {[...Array(3)].map((_, index) => (
@@ -382,17 +351,6 @@ export default function AttendancePage() {
                   >
                     Show QR
                   </button>
-                  {userType === 'student' && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openAttendanceModal(session.sessionID);
-                      }}
-                      className="px-4 py-2 border border-green-500 text-green-500 rounded-lg hover:bg-green-50 transition-all duration-300 text-sm font-medium"
-                    >
-                      Mark Attendance
-                    </button>
-                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

@@ -18,16 +18,7 @@ interface StepCardProps {
   description: string;
 }
 
-interface TestimonialCardProps {
-  quote: string;
-  author: string;
-  role: string;
-  image: string;
-}
-
 const LandingPage = () => {
-
-
 
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -231,35 +222,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      {/* <section id="testimonials" className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-16">What Educators Say</h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <TestimonialCard
-              quote="Professor Portal has transformed how I take attendance. The geolocation feature ensures students are actually in class."
-              author="Dr. Sarah Johnson"
-              role="Computer Science Professor"
-              image="/testimonial1.jpg"
-            />
-            <TestimonialCard
-              quote="The real-time analytics help me identify attendance patterns and reach out to students who need support."
-              author="Prof. Michael Chen"
-              role="Engineering Department"
-              image="/testimonial2.jpg"
-            />
-            <TestimonialCard
-              quote="Setting up multiple classes and batches is incredibly easy. This tool has saved me hours of administrative work."
-              author="Dr. Emily Rodriguez"
-              role="Business School Director"
-              image="/testimonial3.jpg"
-            />
-          </div>
-        </div>
-      </section> */}
-
-      {/* CTA Section */}
       <section className="py-20 bg-indigo-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Attendance Management?</h2>
@@ -270,11 +232,6 @@ const LandingPage = () => {
                 Start for free
               </button>
             </Link>
-            {/* <Link href="/contact">
-              <button className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full hover:bg-blue-700 transition text-lg font-semibold">
-                Contact Sales
-              </button>
-            </Link> */}
           </div>
         </div>
       </section>
@@ -283,7 +240,6 @@ const LandingPage = () => {
 <footer className="bg-gray-900 text-white py-12">
   <div className="container mx-auto px-4">
     <div className="grid md:grid-cols-3 gap-8">
-      {/* Add any additional content here */}
     </div>
 
     <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col items-center justify-center text-center">

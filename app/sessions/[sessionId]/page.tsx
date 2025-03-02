@@ -27,27 +27,13 @@ interface Session {
   __v: number;
 }
 
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
+interface Student {
+  studentID: string;
+  attendanceStatus: 'Present' | 'Absent' | 'Excused';
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, children }) => {
-  if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-none rounded-lg p-6 w-11/12 max-w-md">
-        <div className="text-center">
-          {children}
-        </div>
-        <div className="mt-4 flex justify-center">
-        </div>
-      </div>
-    </div>
-  );
-};
+
 
 export default function SessionDetails() {
   const params = useParams();
@@ -117,327 +103,150 @@ export default function SessionDetails() {
     }
   };
 
-  const handleDownload = (format: 'excel' | 'pdf') => {
-    if (!session) return;
-    
-    const reportDate = new Date().toLocaleDateString();
-    const reportTime = new Date().toLocaleTimeString();
-    
-    const institutionName = "Youngstown State University";
-    const institutionAddress = "One University Plaza, Youngstown, OH 44555, USA";
-    const institutionPhone = "+1 330-941-3000";
-    const institutionEmail = "webmaster@ysu.edu";
-    const institutionWebsite = "https://ysu.edu";
+  // Define proper types for our data
+interface Student {
+  studentID: string;
+  attendanceStatus: 'Present' | 'Absent' | 'Excused';
+}
+
+interface Session {
+  sessionID: string;
+  sessionTitle: string;
+  sessionDescription: string;
+  sessionValidFrom: string;
+  sessionValidTo: string;
+  sessionStatus: string;
+  subjectCode: string;
+  createdBy: string;
+  batchID: string;
+  sessionCreatedDateTime: string;
+  students: Student[];
+}
+
+const handleDownload = (format: 'excel' | 'pdf') => {
+  if (!session) return;
   
-    // Simplified student data with only requested fields
-    const studentData = session.students.map((student: any, index: number) => [
-      index + 1,
-      student.studentID,
-      student.attendanceStatus
-    ]);
+  // Basic information
+  const reportDate = new Date().toLocaleDateString();
+  const institutionName = "Youngstown State University";
   
-    const totalStudents = session.students.length;
-    const presentStudents = session.students.filter((s: any) => s.attendanceStatus === 'Present').length;
-    const absentStudents = session.students.filter((s: any) => s.attendanceStatus === 'Absent').length;
-    const attendancePercentage = totalStudents > 0 ? ((presentStudents / totalStudents) * 100).toFixed(2) : '0';
+  // Prepare the data
+  const studentData = session.students.map((student, index) => [
+    index + 1,
+    student.studentID,
+    student.attendanceStatus
+  ]);
   
-    const attendanceStats = [
-      ['Total Students', totalStudents.toString()],
-      ['Present', presentStudents.toString()],
-      ['Absent', absentStudents.toString()],
-      ['Attendance Rate', `${attendancePercentage}%`]
-    ];
+  // Calculate attendance statistics
+  const totalStudents = session.students.length;
+  const presentStudents = session.students.filter(s => s.attendanceStatus === 'Present').length;
+  const absentStudents = session.students.filter(s => s.attendanceStatus === 'Absent').length;
+  const attendancePercentage = totalStudents > 0 ? ((presentStudents / totalStudents) * 100).toFixed(2) : '0';
   
-    // Break session description into multiple lines for better display
-    const wrapDescription = (text: string, maxLength: number = 80): string[] => {
-      if (!text) return ['N/A'];
+  // Export as Excel
+  if (format === 'excel') {
+    import('xlsx').then((XLSX) => {
+      const workbook = XLSX.utils.book_new();
       
-      const words = text.split(' ');
-      const lines: string[] = [];
-      let currentLine = '';
+      // Create summary sheet
+      const summaryData = [
+        [`${institutionName} - ATTENDANCE REPORT`],
+        [''],
+        ['Session Information:'],
+        ['Title:', session.sessionTitle],
+        ['Subject:', session.subjectCode],
+        ['Session ID:', session.sessionID],
+        ['Date Range:', `${new Date(session.sessionValidFrom).toLocaleDateString()} to ${new Date(session.sessionValidTo).toLocaleDateString()}`],
+        [''],
+        ['Attendance Summary:'],
+        ['Total Students:', totalStudents.toString()],
+        ['Present:', presentStudents.toString()],
+        ['Absent:', absentStudents.toString()],
+        ['Attendance Rate:', `${attendancePercentage}%`]
+      ];
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
       
-      words.forEach(word => {
-        if ((currentLine + ' ' + word).length <= maxLength) {
-          currentLine += (currentLine ? ' ' : '') + word;
-        } else {
-          lines.push(currentLine);
-          currentLine = word;
-        }
-      });
+      // Create attendance sheet
+      const headerRow = ['S.No', 'Student ID', 'Status'];
+      const attendanceSheet = XLSX.utils.aoa_to_sheet([headerRow, ...studentData]);
       
-      if (currentLine) {
-        lines.push(currentLine);
-      }
+      // Add sheets to workbook
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+      XLSX.utils.book_append_sheet(workbook, attendanceSheet, 'Attendance');
       
-      return lines;
-    };
-  
-    const sessionInfo = [
-      ['Session Title', session.sessionTitle],
-      ['Description', wrapDescription(session.sessionDescription)[0]],
-      ...wrapDescription(session.sessionDescription).slice(1).map(line => ['', line]),
-      ['Valid From', new Date(session.sessionValidFrom).toLocaleString()],
-      ['Valid To', new Date(session.sessionValidTo).toLocaleString()],
-      ['Status', session.sessionStatus],
-      ['Subject Code', session.subjectCode],
-      ['Created By', session.createdBy],
-      ['Batch ID', session.batchID],
-      ['Session ID', session.sessionID],
-      ['Created On', new Date(session.sessionCreatedDateTime).toLocaleString()],
-    ];
-  
-    if (format === 'excel') {
-      // Import XLSX if not already imported
-      import('xlsx').then((XLSX) => {
-        const workbook = XLSX.utils.book_new();
-  
-        const coverData = [
-          [`${institutionName} - CLASSROOM ATTENDANCE REPORT`],
-          [''],
-          ['Institution Details:'],
-          ['Address:', institutionAddress],
-          ['Phone:', institutionPhone],
-          ['Email:', institutionEmail],
-          ['Website:', institutionWebsite],
-          [''],
-          ['Report Generated On:', `${reportDate} at ${reportTime}`],
-          [''],
-          ['SESSION INFORMATION'],
-          ...sessionInfo,
-          [''],
-          ['ATTENDANCE STATISTICS'],
-          ...attendanceStats
-        ];
-        const coverSheet = XLSX.utils.aoa_to_sheet(coverData);
-        coverSheet['!cols'] = [{ wch: 25 }, { wch: 70 }]; // Wider second column for description
-  
-        // Simplified header row with only requested fields
-        const headerRow = ['S.No', 'Student ID', 'Status'];
-        const studentSheet = XLSX.utils.aoa_to_sheet([headerRow, ...studentData]);
-        studentSheet['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 15 }];
-  
-        XLSX.utils.book_append_sheet(workbook, coverSheet, 'Report Summary');
-        XLSX.utils.book_append_sheet(workbook, studentSheet, 'Student Attendance');
-  
-        const fileName = `${institutionName.replace(/\s+/g, '_')}_Attendance_${session.subjectCode}_${session.sessionID}_${reportDate.replace(/\//g, '-')}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
-      }).catch(error => {
-        console.error('Error generating Excel file:', error);
-      });
-    } else if (format === 'pdf') {
-      // Import jsPDF
-      import('jspdf').then((jsPDFModule) => {
-        const jsPDF = jsPDFModule.default;
+      // Generate filename and save
+      const fileName = `Attendance_${session.subjectCode}_${session.sessionID}_${reportDate.replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+    }).catch(error => {
+      console.error('Error generating Excel file:', error);
+    });
+  } 
+  // Export as PDF
+  else if (format === 'pdf') {
+    // First import jsPDF
+    import('jspdf').then(async ({ default: jsPDF }) => {
+      try {
+        // Then import and set up the autotable plugin
+        const autoTable = await import('jspdf-autotable').then(
+          module => module.default || module
+        );
         
-        // Create document instance
+        // Create the document
         const doc = new jsPDF();
         
-        // Now import jspdf-autotable as a separate step
-        import('jspdf-autotable').then(() => {
-          // Document header
-          doc.setFontSize(18).setFont('helvetica', 'bold')
-            .text(institutionName, doc.internal.pageSize.width / 2, 15, { align: 'center' });
-  
-          doc.setFontSize(14).setFont('helvetica', 'normal')
-            .text('CLASSROOM ATTENDANCE REPORT', doc.internal.pageSize.width / 2, 22, { align: 'center' });
-  
-          doc.setFontSize(10).text(institutionAddress, doc.internal.pageSize.width / 2, 28, { align: 'center' })
-            .text(`Phone: ${institutionPhone} | Email: ${institutionEmail}`, doc.internal.pageSize.width / 2, 34, { align: 'center' })
-            .text(`Website: ${institutionWebsite}`, doc.internal.pageSize.width / 2, 40, { align: 'center' });
-  
-          doc.setFontSize(10).setFont('helvetica', 'italic')
-            .text(`Report generated on: ${reportDate} at ${reportTime}`, 14, 48);
-  
-          doc.setDrawColor(0).setLineWidth(0.5).line(14, 52, doc.internal.pageSize.width - 14, 52);
-  
-          // Session information section with wrapped description
-          doc.setFontSize(12).setFont('helvetica', 'bold')
-            .text('SESSION INFORMATION', 14, 60);
-  
-          doc.setFontSize(10).setFont('helvetica', 'normal');
-          
-          let yPosition = 70;
-          const descriptionLines = wrapDescription(session.sessionDescription);
-          
-          // Handle each session information entry
-          sessionInfo.forEach(([label, value], index) => {
-            // Skip the description entries, we'll handle them separately
-            if (label === 'Description' || label === '') {
-              if (label === 'Description') {
-                doc.text(`${label}:`, 14, yPosition);
-                doc.text(`${value}`, 60, yPosition);
-                yPosition += 7;
-              } else if (label === '') {
-                doc.text(`${value}`, 60, yPosition);
-                yPosition += 7;
-              }
-            } else {
-              doc.text(`${label}:`, 14, yPosition);
-              doc.text(`${value}`, 60, yPosition);
-              yPosition += 7;
-            }
-          });
-  
-          // Statistics section
-          const statsYStart = yPosition + 10;
-          doc.setFontSize(12).setFont('helvetica', 'bold')
-            .text('ATTENDANCE STATISTICS', 14, statsYStart);
-  
-          doc.setFontSize(10).setFont('helvetica', 'normal');
-          attendanceStats.forEach(([label, value], index) => {
-            doc.text(`${label}:`, 14, statsYStart + 10 + index * 7);
-            doc.text(`${value}`, 60, statsYStart + 10 + index * 7);
-          });
-  
-          doc.addPage();
-  
-          // Student attendance details page
-          doc.setFontSize(14).setFont('helvetica', 'bold')
-            .text('CLASSROOM ATTENDANCE DETAILS', doc.internal.pageSize.width / 2, 15, { align: 'center' });
-  
-          doc.setFontSize(10).setFont('helvetica', 'normal')
-            .text(`Session: ${session.sessionTitle} (${session.sessionID})`, 14, 25)
-            .text(`Subject: ${session.subjectCode}`, 14, 32)
-            .text(`Date: ${new Date(session.sessionValidFrom).toLocaleDateString()}`, 14, 39);
-  
-          // Generate simplified student attendance table
-          try {
-            (doc as any).autoTable({
-              startY: 45,
-              head: [['S.No', 'Student ID', 'Status']],
-              body: studentData,
-              theme: 'grid',
-              headStyles: { fillColor: [70, 70, 70], textColor: [255, 255, 255], fontStyle: 'bold' },
-              alternateRowStyles: { fillColor: [240, 240, 240] },
-              columnStyles: { 
-                0: { cellWidth: 15 }, 
-                1: { cellWidth: 40 }, 
-                2: { cellWidth: 30 }
-              },
-              didDrawPage: (data: any) => {
-                const pageNumber = 1
-                
-                // Add footer with "For Official Use Only" text
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'italic');
-                doc.setTextColor(100, 100, 100);
-                doc.text(
-                  `FOR OFFICIAL USE ONLY - CONFIDENTIAL`,
-                  doc.internal.pageSize.width / 2, 
-                  doc.internal.pageSize.height - 15, 
-                  { align: 'center' }
-                );
-                
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(0, 0, 0);
-                doc.text(
-                  `Page ${pageNumber} - ${institutionName} - Generated on ${reportDate}`,
-                  doc.internal.pageSize.width / 2, 
-                  doc.internal.pageSize.height - 10, 
-                  { align: 'center' }
-                );
-              }
-            });
-          } catch (tableError) {
-            console.error('Error using autoTable, falling back to manual table:', tableError);
-            
-            // Fall back to a simple manual table if autoTable is not available
-            const startY = 45;
-            const colWidths = [15, 40, 30];
-            const colStart = [14, 29, 69]; // Starting X position for each column
-            const rowHeight = 8;
-            
-            // Draw header
-            const headers = ['S.No', 'Student ID', 'Status'];
-            doc.setFillColor(70, 70, 70);
-            doc.setTextColor(255, 255, 255);
-            doc.setFont('helvetica', 'bold');
-            doc.rect(14, startY, 85, rowHeight, 'F');
-            
-            headers.forEach((header, idx) => {
-              doc.text(header, colStart[idx], startY + 5);
-            });
-            
-            // Draw data rows
-            doc.setTextColor(0, 0, 0);
-            doc.setFont('helvetica', 'normal');
-            
-            studentData.forEach((row, rowIdx) => {
-              const yPos = startY + (rowIdx + 1) * rowHeight;
-              
-              // Add alternating row background
-              if (rowIdx % 2 === 0) {
-                doc.setFillColor(240, 240, 240);
-                doc.rect(14, yPos, 85, rowHeight, 'F');
-              }
-              
-              // Add cell content
-              row.forEach((cell, cellIdx) => {
-                doc.text(String(cell), colStart[cellIdx], yPos + 5);
-              });
-            });
-            
-            // Add "For Official Use Only" footer
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'italic');
-            doc.setTextColor(100, 100, 100);
-            doc.text(
-              `FOR OFFICIAL USE ONLY - CONFIDENTIAL`,
-              doc.internal.pageSize.width / 2, 
-              doc.internal.pageSize.height - 15, 
-              { align: 'center' }
-            );
-            
-            // Add page number at the bottom
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(0, 0, 0);
-            const pageNumber = 1
-            doc.text(
-              `Page ${pageNumber} - ${institutionName} - Generated on ${reportDate}`,
-              doc.internal.pageSize.width / 2, 
-              doc.internal.pageSize.height - 10, 
-              { align: 'center' }
-            );
-          }
-  
-          const fileName = `${institutionName.replace(/\s+/g, '_')}_Attendance_${session.subjectCode}_${session.sessionID}_${reportDate.replace(/\//g, '-')}.pdf`;
-          doc.save(fileName);
-        }).catch(error => {
-          console.error('Error with jspdf-autotable:', error);
-          
-          // Fallback to basic PDF without table if autoTable can't be loaded
-          const doc = new jsPDF();
-          doc.setFontSize(16);
-          doc.text("Classroom Attendance Report", 14, 20);
-          doc.setFontSize(12);
-          doc.text(`${institutionName} - ${session.sessionTitle}`, 14, 30);
-          doc.text(`Subject: ${session.subjectCode}`, 14, 40);
-          doc.text(`Total Students: ${totalStudents}`, 14, 50);
-          doc.text(`Present: ${presentStudents} (${attendancePercentage}%)`, 14, 60);
-          doc.text(`Absent: ${absentStudents}`, 14, 70);
-          doc.text(`Report generated on: ${reportDate} at ${reportTime}`, 14, 80);
-          
-          // Add "For Official Use Only" footer
-          doc.setFontSize(8);
-          doc.setFont('helvetica', 'italic');
-          doc.text(
-            `FOR OFFICIAL USE ONLY - CONFIDENTIAL`,
-            doc.internal.pageSize.width / 2, 
-            doc.internal.pageSize.height - 15, 
-            { align: 'center' }
-          );
-          
-          const fileName = `${institutionName.replace(/\s+/g, '_')}_Attendance_${session.subjectCode}_${session.sessionID}_${reportDate.replace(/\//g, '-')}_basic.pdf`;
-          doc.save(fileName);
+        // Add title
+        doc.setFontSize(16);
+        doc.text(`${institutionName} - ATTENDANCE REPORT`, 14, 20);
+        
+        // Add session info
+        doc.setFontSize(12);
+        doc.text(`Session: ${session.sessionTitle} (${session.sessionID})`, 14, 30);
+        doc.text(`Subject: ${session.subjectCode}`, 14, 38);
+        doc.text(`Date: ${new Date(session.sessionValidFrom).toLocaleDateString()}`, 14, 46);
+        
+        // Add attendance summary
+        doc.text('Attendance Summary:', 14, 58);
+        doc.text(`Total Students: ${totalStudents}`, 20, 66);
+        doc.text(`Present: ${presentStudents} (${attendancePercentage}%)`, 20, 74);
+        doc.text(`Absent: ${absentStudents}`, 20, 82);
+        
+        // Use the autoTable function directly
+        autoTable(doc, {
+          startY: 94,
+          head: [['S.No', 'Student ID', 'Status']],
+          body: studentData,
+          theme: 'grid'
         });
-      }).catch(error => {
-        console.error('Error loading jsPDF:', error);
-        alert('Failed to generate PDF. Please try again or contact support.');
-      });
-    }
-  };
+        
+        // Add footer
+        doc.setFontSize(10);
+        doc.text(`Generated on: ${reportDate}`, 14, doc.internal.pageSize.height - 10);
+        
+        // Save the file
+        const fileName = `Attendance_${session.subjectCode}_${session.sessionID}_${reportDate.replace(/\//g, '-')}.pdf`;
+        doc.save(fileName);
+        
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        
+        // Fallback to basic PDF without table
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text(`${institutionName} - ATTENDANCE REPORT`, 14, 20);
+        doc.setFontSize(12);
+        doc.text(`Session: ${session.sessionTitle}`, 14, 30);
+        doc.text(`Subject: ${session.subjectCode}`, 14, 38);
+        doc.text(`Total Students: ${totalStudents}`, 14, 48);
+        doc.text(`Present: ${presentStudents} (${attendancePercentage}%)`, 14, 56);
+        doc.text(`Absent: ${absentStudents}`, 14, 64);
+        doc.text(`Generated on: ${reportDate}`, 14, 72);
+        doc.save(`Attendance_Basic_${reportDate.replace(/\//g, '-')}.pdf`);
+      }
+    }).catch(error => {
+      console.error('Error loading jsPDF:', error);
+    });
+  }
+};
   // Check if the current student's attendance is already marked
   const isAttendanceMarked = session?.students.find((student) => student.studentID === studentID)?.attendanceStatus === 'Present';
 
@@ -651,7 +460,7 @@ export default function SessionDetails() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {session.students.map((student) => (
-                          <tr key={student._id} className="hover:bg-gray-50 transition-colors duration-150">
+                          <tr key={student.studentID} className="hover:bg-gray-50 transition-colors duration-150">
                             {showAttendancePanel && (
                               <td className="px-6 py-4 whitespace-nowrap">
                                 {student.attendanceStatus === 'Absent' && (
