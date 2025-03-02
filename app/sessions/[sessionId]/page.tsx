@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-
 "use client";
 
 import { useParams, useRouter } from 'next/navigation';
@@ -9,9 +5,7 @@ import { useEffect, useState } from 'react';
 import { Clock, Users, BookOpen, User, Calendar, Activity, Download } from 'lucide-react';
 import { fetchSessionDetails, updateAttendance } from '@/app/api/sessionDetails';
 import { getSessionAuthToken, getUserType, getUserId } from '@/app/utils/authSession';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+
 
 interface Session {
   _id: string;
@@ -60,8 +54,6 @@ export default function SessionDetails() {
   const router = useRouter();
   const sessionId = params.sessionId as string;
 
-  const [successAttenenceResult, setSuccessAttenenceResult] = useState(false);
-
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,11 +64,6 @@ export default function SessionDetails() {
   const [userType, setUserType] = useState("student");
   const [studentID, setStudentID] = useState<string | null>(null);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Fetch session details on component mount
   useEffect(() => {
     if (!sessionId || !authToken) {
       router.push('/auth/login');
@@ -129,12 +116,6 @@ export default function SessionDetails() {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
-
-  const handleAttendenceExperiences = () => {
-    setModalMessage("You have to be physically present in the class to mark your attendance. This process will capture your geolocation. To proceed, please allow location access and continue.");
-    setIsModalOpen(true);
-
-  }
 
   const handleDownload = (format: 'excel' | 'pdf') => {
     if (!session) return;

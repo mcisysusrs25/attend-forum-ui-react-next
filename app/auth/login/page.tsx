@@ -34,14 +34,14 @@ const AuthPage = () => {
     }
   };
 
-  const userID = getUserId();
-  const token = getSessionAuthToken();
+  // const userID = getUserId();
+  // const token = getSessionAuthToken();
 
-    useEffect(() => {
-      if(userID && token){
-        router.push('/sessions');
-      }
-    }, [userID, token]);
+  //   useEffect(() => {
+  //     if(userID && token){
+  //       router.push('/sessions');
+  //     }
+  //   }, [router, userID, token]);
 
   // Handle automatic switch to login after registration
   useEffect(() => {
