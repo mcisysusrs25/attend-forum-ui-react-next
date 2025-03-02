@@ -6,35 +6,6 @@ import { Clock, Users, BookOpen, User, Calendar, Activity, Download } from 'luci
 import { fetchSessionDetails, updateAttendance } from '@/app/api/sessionDetails';
 import { getSessionAuthToken, getUserType, getUserId } from '@/app/utils/authSession';
 
-
-interface Session {
-  _id: string;
-  sessionTitle: string;
-  sessionDescription: string;
-  sessionValidFrom: string;
-  sessionValidTo: string;
-  sessionStatus: string;
-  subjectCode: string;
-  createdBy: string;
-  batchID: string;
-  students: {
-    studentID: string;
-    attendanceStatus: string;
-    _id: string;
-  }[];
-  sessionID: string;
-  sessionCreatedDateTime: string;
-  __v: number;
-}
-
-interface Student {
-  studentID: string;
-  attendanceStatus: 'Present' | 'Absent' | 'Excused';
-}
-
-
-
-
 export default function SessionDetails() {
   const params = useParams();
   const router = useRouter();
@@ -47,21 +18,11 @@ export default function SessionDetails() {
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
   const authToken = getSessionAuthToken();
-  const [userType, setUserType] = useState("student");
-  const [studentID, setStudentID] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionId || !authToken) {
       router.push('/auth/login');
       return;
-    }
-
-    const usertype = getUserType();
-    setUserType(usertype!);
-
-    if (usertype === "student") {
-      const studentID = getUserId();
-      setStudentID(studentID);
     }
 
     const loadSession = async () => {
@@ -247,8 +208,6 @@ const handleDownload = (format: 'excel' | 'pdf') => {
     });
   }
 };
-  // Check if the current student's attendance is already marked
-  const isAttendanceMarked = session?.students.find((student) => student.studentID === studentID)?.attendanceStatus === 'Present';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
@@ -311,7 +270,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
             <>
               <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">{session.sessionTitle}</h1>
-                {userType === "professor" && (
+                
                   <div className="flex items-center space-x-4">
                     <button
                       onClick={() => handleDownload('excel')}
@@ -328,7 +287,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                       Download PDF
                     </button>
                   </div>
-                )}
+                
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -414,7 +373,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                   <Users className="w-6 h-6 text-blue-600" />
                   <h2 className="text-2xl font-bold text-gray-900">Student Attendance</h2>
                 </div>
-                {userType === "professor" && (
+                
                   <div className="flex items-center space-x-4">
                     <label className="flex items-center space-x-3 bg-gray-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-200">
                       <input
@@ -436,7 +395,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                       </button>
                     )}
                   </div>
-                )}
+              
               </div>
 
               <div className="overflow-x-auto">
