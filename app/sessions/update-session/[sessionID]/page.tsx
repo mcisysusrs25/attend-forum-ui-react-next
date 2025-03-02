@@ -176,7 +176,7 @@ export default function UpdateSessionPage() {
       };
   
       loadConfigs();
-    }, [authToken, userID]);
+    }, [authToken, userID, configs]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

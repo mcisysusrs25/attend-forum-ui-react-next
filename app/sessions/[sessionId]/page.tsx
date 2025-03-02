@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Clock, Users, BookOpen, User, Calendar, Activity, Download } from 'lucide-react';
 import { fetchSessionDetails, updateAttendance } from '@/app/api/sessionDetails';
-import { getSessionAuthToken, getUserType, getUserId } from '@/app/utils/authSession';
+import { getSessionAuthToken } from '@/app/utils/authSession';
 
 export default function SessionDetails() {
   const params = useParams();
