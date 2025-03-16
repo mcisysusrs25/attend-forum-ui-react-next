@@ -164,11 +164,13 @@ export async function fetchSessions(userType: string, userID: string, authToken:
   
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch subjects');
+        console.log(errorData);
+        // throw new Error(errorData.message || 'Failed to fetch subjects');
       }
   
-      const data = await response.json();
+      const data = await response!.json();
       return data.data;
+
     } catch (error) {
       console.error('Error fetching subjects:', error);
       throw error;

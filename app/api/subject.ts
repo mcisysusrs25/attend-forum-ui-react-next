@@ -29,6 +29,7 @@ export async function fetchSubjects(userID: string, authToken: string) {
       const data = await response.json();
   
       return Array.isArray(data.data) ? data.data : [];
+
     } catch (error) {
       console.error('Error fetching subjects:', error);
       return []; // Return empty array on failure
@@ -164,7 +165,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
       console.log('Data fetched successfully:', data);
       return data;
     } catch (error) {
-      console.error('Error fetching subject:', error);
+      // console.error('Error fetching subject:', error);
       // throw error instanceof Error ? error : new Error('An error occurred');
     }
   }

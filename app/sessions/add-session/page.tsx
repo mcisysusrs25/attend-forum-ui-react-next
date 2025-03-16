@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
 import { fetchBatchesByProfessorId, fetchSubjectsByProfessorId, addSession } from '@/app/api/session';
 import { fetchClasssConfigurationsByProfessorID } from '@/app/api/config';
+import { fetchSubjects } from '@/app/api/subject';
 
 interface Batch {
   _id: string;
@@ -194,7 +195,7 @@ export default function AddSessionPage() {
         });
 
       // Fetch subjects
-      fetchSubjectsByProfessorId(userID, authToken)
+      fetchSubjects(userID, authToken)
         .then(subjectsData => {
           setSubjects(subjectsData);
           setLoadingResources(prev => ({ ...prev, subjects: false }));
@@ -216,8 +217,11 @@ export default function AddSessionPage() {
   useEffect(() => {
     if (!loadingResources.batches && !loadingResources.subjects && !loadingResources.configurations) {
       setIsLoading(false);
-    } else {
+    } 
+    if (!batches.length || !subjects.length || !classConfigurations.length) {
       setIsDataNotConfigured(true);
+    } else {
+      setIsDataNotConfigured(false);
     }
   }, [loadingResources]);
 
@@ -430,7 +434,10 @@ export default function AddSessionPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900">The user has to configure Batch, Class and subjects. </h3>
+            <h3 className="text-lg font-medium text-gray-900">{dataErrors.batches} </h3>
+            <h3 className="text-lg font-medium text-gray-900">{dataErrors.configurations} </h3>
+            <h3 className="text-lg font-medium text-gray-900">{dataErrors.subjects} </h3>
+
             <p className="text-gray-500 mt-1">Please Confgigure this before creating a sessioin</p>
             <button onClick={handleBacktoSessions} className='bg-primary px-4 py-2 mt-4 rounded-md text-white'>Back to Sessions</button>
           </div>
