@@ -2,6 +2,7 @@
 
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, CalendarIcon, BookOpenIcon, UserGroupIcon, Cog6ToothIcon } from '@heroicons/react/24/outline'
+import { HistoryIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -9,10 +10,11 @@ import { useEffect, useState } from 'react'
 
 // Define navigation items with icons for professors and students
 const professorNavigation = [
-  { name: 'My Sessions', href: '/sessions', icon: CalendarIcon },
-  { name: 'My Subjects', href: '/subjects', icon: BookOpenIcon },
-  { name: 'My Batches', href: '/batches', icon: UserGroupIcon },
-  { name: 'My Classes', href: '/config', icon: Cog6ToothIcon },
+  { name: 'Sessions', href: '/sessions', icon: CalendarIcon },
+  { name: 'Subjects', href: '/subjects', icon: BookOpenIcon },
+  { name: 'Batches', href: '/batches', icon: UserGroupIcon },
+  { name: 'Classes', href: '/config', icon: Cog6ToothIcon },
+  { name: 'History', href: '/history', icon: HistoryIcon },
 ]
 
 const studentNavigation = [

@@ -27,8 +27,6 @@ interface Subject {
   __v: number;
 }
 
-
-// Define Classroom Interface
 interface Classroom {
   _id?: string;
   latitude: number;
@@ -42,22 +40,19 @@ interface Classroom {
 
 export default function UpdateSessionPage() {
   const router = useRouter();
-  const params = useParams(); // Get params from the URL
+  const params = useParams();
   const sessionID = typeof params.sessionID === 'string' ? params.sessionID : Array.isArray(params.sessionID) ? params.sessionID[0] : '';
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [sessionValidFrom, setSessionValidFrom] = useState('');
   const [sessionValidTo, setSessionValidTo] = useState('');
-  const [subjectCode, setSubjectCode] = useState(''); // Selected subjectCode
-  const [batchID, setBatchID] = useState(''); // Selected batchID
-  const [batches, setBatches] = useState<Batch[]>([]); // List of batches
-  const [subjects, setSubjects] = useState<Subject[]>([]); // List of subjects
+  const [subjectCode, setSubjectCode] = useState('');
+  const [batchID, setBatchID] = useState('');
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  const [classConfigId, setClassConfigId] = useState(''); // Selected batchID
-  const [configs, setConfigs] = useState<Classroom[]>([]); // List of batches
-  
-  // Loading state controls
+  const [classConfigId, setClassConfigId] = useState('');
+  const [configs, setConfigs] = useState<Classroom[]>([]);
   const [loadingSession, setLoadingSession] = useState(true);
   const [loadingBatches, setLoadingBatches] = useState(true);
   const [loadingSubjects, setLoadingSubjects] = useState(true);
@@ -67,7 +62,6 @@ export default function UpdateSessionPage() {
   const authToken = getSessionAuthToken();
   const userID = getUserId();
 
-  // Fetch session details
   useEffect(() => {
     if (!sessionID || !authToken || !userID) {
       router.push('/auth/login');
@@ -81,13 +75,11 @@ export default function UpdateSessionPage() {
 
         const session = await fetchSessionDetails(sessionID, authToken);
 
-        // Format the date and time for datetime-local input
         const formatDateTime = (dateTime: string) => {
           const date = new Date(dateTime);
-          return date.toISOString().slice(0, 16); // Convert to "YYYY-MM-DDTHH:MM" format
+          return date.toISOString().slice(0, 16);
         };
 
-        // Bind session details to the form fields
         setSessionTitle(session.sessionTitle);
         setSessionDescription(session.sessionDescription);
         setSessionValidFrom(formatDateTime(session.sessionValidFrom));
@@ -95,9 +87,6 @@ export default function UpdateSessionPage() {
         setSubjectCode(session.subjectCode);
         setBatchID(session.batchID);
         setClassConfigId(session.classConfigId);
-        
-        console.log("sessions confid it to test");
-        console.log(session.classConfigId);
 
       } catch (error) {
         console.error('Error fetching session details:', error);
@@ -110,7 +99,6 @@ export default function UpdateSessionPage() {
     loadSession();
   }, [sessionID, authToken, userID, router]);
 
-  // Fetch batches for the professor
   useEffect(() => {
     if (!authToken || !userID) {
       return;
@@ -132,7 +120,6 @@ export default function UpdateSessionPage() {
     loadBatches();
   }, [authToken, userID]);
 
-  // Fetch subjects for the professor
   useEffect(() => {
     if (!authToken || !userID) {
       return;
@@ -154,29 +141,26 @@ export default function UpdateSessionPage() {
     loadSubjects();
   }, [authToken, userID]);
 
+  useEffect(() => {
+    if (!authToken || !userID) {
+      return;
+    }
 
-    // Fetch configs for the professor
-    useEffect(() => {
-      if (!authToken || !userID) {
-        return;
+    const loadConfigs = async () => {
+      try {
+        setLoadingConfigs(true);
+        const resultsConfig = await fetchClasssConfigurationsByProfessorID(authToken, userID);
+        setConfigs(resultsConfig?.data || []);
+      } catch (error) {
+        console.error('Error fetching Class configs:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
+      } finally {
+        setLoadingConfigs(false);
       }
-  
-      const loadConfigs = async () => {
-        try {
-          setLoadingConfigs(true);
-          const resultsConfig = await fetchClasssConfigurationsByProfessorID(authToken, userID);
-          setConfigs(resultsConfig?.data || []);
-          console.log(configs);
-        } catch (error) {
-          console.error('Error fetching Class configs:', error);
-          setError(error instanceof Error ? error.message : 'An error occurred');
-        } finally {
-          setLoadingConfigs(false);
-        }
-      };
-  
-      loadConfigs();
-    }, [authToken, userID, configs]);
+    };
+
+    loadConfigs();
+  }, [authToken, userID]); // Removed configs from the dependency array
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,7 +187,6 @@ export default function UpdateSessionPage() {
 
       await updateSession(sessionID, sessionData, authToken);
 
-      // Redirect after successful submission
       router.push('/sessions#new');
     } catch (error) {
       console.error('Error updating session:', error);
@@ -213,18 +196,14 @@ export default function UpdateSessionPage() {
     }
   };
 
-  // Check if any data is still loading
   const isLoading = loadingSession || loadingBatches || loadingSubjects || loadingConfigs;
 
-  // Skeleton loading component
   const SkeletonForm = () => (
     <div className="space-y-4 animate-pulse">
       <div className="h-5 bg-gray-200 rounded w-1/4 mb-2"></div>
       <div className="h-10 bg-gray-200 rounded w-full"></div>
-      
       <div className="h-5 bg-gray-200 rounded w-1/4 mb-2"></div>
       <div className="h-24 bg-gray-200 rounded w-full"></div>
-      
       <div className="grid grid-cols-2 gap-4">
         <div>
           <div className="h-5 bg-gray-200 rounded w-1/2 mb-2"></div>
@@ -235,20 +214,33 @@ export default function UpdateSessionPage() {
           <div className="h-10 bg-gray-200 rounded w-full"></div>
         </div>
       </div>
-      
       <div className="h-5 bg-gray-200 rounded w-1/4 mb-2"></div>
       <div className="h-10 bg-gray-200 rounded w-full"></div>
-      
       <div className="h-5 bg-gray-200 rounded w-1/4 mb-2"></div>
       <div className="h-10 bg-gray-200 rounded w-full"></div>
-      
       <div className="h-10 bg-gray-200 rounded w-28 mt-4"></div>
     </div>
   );
 
+  function handleBacktoSessions(){
+    router.push('/sessions')
+  }
+
   return (
     <div className="bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+      <div className="px-4 sm:px-6 lg:px-8 py-4">
+        
+      <button
+            type="button"
+            onClick={() => router.push("/sessions")}
+            className="mb-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-sm transition-all duration-200"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Sessions
+          </button>
+
         <h2 className="text-2xl font-bold mb-4">Update Session</h2>
 
         {error && (

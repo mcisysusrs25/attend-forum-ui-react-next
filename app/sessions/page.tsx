@@ -26,10 +26,12 @@ export default function AttendancePage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'active' | 'completed' | 'new'>('active');
+  const [filter, setFilter] = useState<'active' | 'new'>('active');
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrCodeDataUrl, setQRCodeDataUrl] = useState('');
   const [isMounted, setIsMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
 
   // Fetch user data with useEffect to prevent hydration errors
   const [userType, setUserType] = useState<string | null>(null);
@@ -48,8 +50,8 @@ export default function AttendancePage() {
   useEffect(() => {
     if (isMounted) {
       const hash = window.location.hash.substring(1); // Remove the '#' from the hash
-      if (hash === 'active' || hash === 'completed' || hash === 'new') {
-        setFilter(hash as 'active' | 'completed' | 'new');
+      if (hash === 'active' || hash === 'new') {
+        setFilter(hash as 'active' | 'new');
       }
     }
   }, [isMounted]);
@@ -66,8 +68,6 @@ export default function AttendancePage() {
     const loadSessions = async () => {
       try {
         setLoading(true);
-        // const data = await fetchSessions(userType!, userID, authToken);
-
         const { data, error, errorType } = await fetchSessions(userType!, userID, authToken);
         
         console.log(data);
@@ -98,7 +98,7 @@ export default function AttendancePage() {
   }, [filter, sessions]);
 
   // Update the URL hash when the filter changes
-  const handleFilterChange = (newFilter: 'active' | 'completed' | 'new') => {
+  const handleFilterChange = (newFilter: 'active'  | 'new') => {
     setFilter(newFilter);
     if (isMounted) {
       window.location.hash = newFilter;
@@ -120,8 +120,6 @@ export default function AttendancePage() {
 
   // Copy link to clipboard
   const copyLinkToClipboard = (sessionID: string) => {
-  
-
     const link = `https://mcisysusrs25.github.io/attendforumstudent/sessionDetails.html?sessionID=${sessionID}`;
     navigator.clipboard.writeText(link).then(() => {
       alert('Link copied to clipboard!');
@@ -174,6 +172,61 @@ export default function AttendancePage() {
     }
   };
 
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Handle month selection change
+  const handleMonthChange = (month: string) => {
+    setSelectedMonths(prev =>
+      prev.includes(month)
+        ? prev.filter(m => m !== month)
+        : [...prev, month]
+    );
+  };
+
+// Get unique months from sessions
+const getUniqueMonths = () => {
+  const months = sessions.map(session => new Date(session.sessionValidFrom).toLocaleString('default', { month: 'long' }));
+  
+  // Array of month names for sorting
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  return [...new Set(months)].sort((a, b) => {
+    const currentYear = new Date().getFullYear();
+    const aMonthIndex = monthNames.indexOf(a);
+    const bMonthIndex = monthNames.indexOf(b);
+
+    // Compare months based on their index in the monthNames array
+    return aMonthIndex - bMonthIndex;
+  });
+};
+
+
+  // Filter sessions based on search query and selected months
+  useEffect(() => {
+    let filtered = sessions.filter(session => session.sessionStatus === filter);
+
+    if (searchQuery) {
+      filtered = filtered.filter(session =>
+        session.sessionTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        session.sessionDescription.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedMonths.length > 0) {
+      filtered = filtered.filter(session =>
+        selectedMonths.includes(new Date(session.sessionValidFrom).toLocaleString('default', { month: 'long' }))
+      );
+    }
+
+    setFilteredSessions(filtered);
+  }, [searchQuery, selectedMonths, sessions, filter]);
+
   const SkeletonLoading = () => (
     <div className="space-y-4">
       {[...Array(3)].map((_, index) => (
@@ -219,10 +272,10 @@ export default function AttendancePage() {
       <div className="px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex space-x-4 mb-8">
           {/* Filter Buttons */}
-          {['active', 'completed', ...(userType === 'professor' ? ['new'] : [])].map((status) => (
+          {['active', ...(userType === 'professor' ? ['new'] : [])].map((status) => (
             <button
               key={status}
-              onClick={() => handleFilterChange(status as 'active' | 'completed' | 'new')}
+              onClick={() => handleFilterChange(status as 'active' | 'new')}
               className={`px-6 py-2 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm ${filter === status
                 ? 'bg-primary text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -231,6 +284,42 @@ export default function AttendancePage() {
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </button>
           ))}
+        </div>
+
+        {/* Search Input */}
+        <div className="mb-8">
+          <input
+            type="text"
+            placeholder="Search sessions..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
+        {/* Month Selection Dropdown */}
+        <div className="mb-8">
+          <label className="block text-sm font-medium text-gray-700">Select Months</label>
+          <div className="mt-1">
+            {getUniqueMonths().map(month => (
+              <div key={month} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={month}
+                  value={month}
+                  checked={selectedMonths.includes(month)}
+                  onChange={() => handleMonthChange(month)}
+                  className="h-4 w-4 text-primary border-gray-300 rounded"
+                />
+                <label htmlFor={month} className="ml-2 text-sm text-gray-700">{month}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Display count of filtered sessions */}
+        <div className="mb-8 text-sm text-gray-700">
+          {filteredSessions.length} sessions found
         </div>
 
         {/* No sessions message */}
