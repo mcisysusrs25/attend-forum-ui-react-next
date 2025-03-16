@@ -197,7 +197,6 @@ const getUniqueMonths = () => {
   ];
 
   return [...new Set(months)].sort((a, b) => {
-    const currentYear = new Date().getFullYear();
     const aMonthIndex = monthNames.indexOf(a);
     const bMonthIndex = monthNames.indexOf(b);
 
