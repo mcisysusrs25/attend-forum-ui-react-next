@@ -222,10 +222,6 @@ export default function UpdateSessionPage() {
     </div>
   );
 
-  function handleBacktoSessions(){
-    router.push('/sessions')
-  }
-
   return (
     <div className="bg-white">
       <div className="px-4 sm:px-6 lg:px-8 py-4">

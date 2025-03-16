@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getUserId, getSessionAuthToken, getUserType } from '../utils/authSession';
-import QRCode from 'qrcode';
-import Image from 'next/image';
-import { fetchSessions, updateSessionStatus, deleteSession } from '@/app/api/session';
+import { fetchSessions } from '@/app/api/session';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 
@@ -28,8 +26,6 @@ export default function AttendancePage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showQRModal, setShowQRModal] = useState(false);
-  const [qrCodeDataUrl, setQRCodeDataUrl] = useState('');
   const [isMounted, setIsMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
@@ -349,64 +345,6 @@ export default function AttendancePage() {
           </div>
         )}
       </div>
-
-      {showQRModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-50">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl">
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Attendance QR Code</h2>
-                  <p className="text-gray-500 mt-1">Scan to mark your attendance</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="flex justify-center">
-                <div className="bg-white p-4 rounded-xl shadow-inner border-2 border-dashed border-gray-200">
-                  {qrCodeDataUrl && (
-                    <Image
-                      src={qrCodeDataUrl}
-                      alt="QR Code"
-                      width={400}
-                      height={400}
-                      className="object-contain"
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-end pt-4">
-                <button
-                  onClick={() => setShowQRModal(false)}
-                  className="px-6 py-2.5 bg-primary text-white rounded-lg transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
