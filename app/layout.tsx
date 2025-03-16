@@ -71,7 +71,7 @@ export default function RootLayout({
                         "My Batches": "/batches/add-batch",
                         "My Classes": "/config/add",
                       }[currentPage] || "#"}
-                      className="inline-flex items-center rounded-md bg-indigo-700 px-4 py-2 text-white text-sm font-medium shadow-sm hover:bg-indigo-800 focus:ring-2 focus:ring-blue-500"
+                      className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-white text-sm font-medium shadow-sm hover:bg-primary focus:ring-2 "
                     >
                       <PlusIcon className="h-5 w-5 mr-2" />
                       Add {currentPage.split(" ")[1]}

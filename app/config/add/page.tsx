@@ -76,14 +76,21 @@ export default function AddClassroomConfig() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-lg mx-auto">
+    <div className="py-4 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-lg">
+      <button
+          type="button"
+          onClick={() => router.push("/config")}
+          className="mb-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 "
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back to Classes
+        </button>
+
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
-            <h2 className="text-2xl font-bold text-white">Classroom Configuration</h2>
-            <p className="text-blue-100 mt-2">Add a new classroom location to your system</p>
-          </div>
+          
           
           {/* Form */}
           <div className="px-8 py-6">
@@ -99,12 +106,12 @@ export default function AddClassroomConfig() {
             )}
             
             {success && (
-              <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-md">
+              <div className="mb-6 bg-green-100 border-l-4 border-green-700 p-4 rounded-md">
                 <div className="flex items-center">
-                  <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-5 w-5 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
-                  <p className="text-sm text-green-700">{success}</p>
+                  <p className="text-sm text-primary">{success}</p>
                 </div>
               </div>
             )}
@@ -121,7 +128,7 @@ export default function AddClassroomConfig() {
                   onChange={(e) => setLabel(e.target.value)}
                   placeholder="e.g., Room 101, Science Lab"
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2  focus:border-primary transition-colors"
                 />
               </div>
               
@@ -138,7 +145,7 @@ export default function AddClassroomConfig() {
                     placeholder="e.g., 41.8781"
                     step="any"
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2  focus:border-primary transition-colors"
                   />
                 </div>
                 
@@ -154,7 +161,7 @@ export default function AddClassroomConfig() {
                     placeholder="e.g., -87.6298"
                     step="any"
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2  focus:border-primary transition-colors"
                   />
                 </div>
               </div>
@@ -190,7 +197,7 @@ export default function AddClassroomConfig() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium py-3 px-4 rounded-lg shadow-md hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-70"
+                  className="w-full bg-gradient-to-r from-primary to-primary text-white font-medium py-3 px-4 rounded-lg shadow-md hover:from-primary hover:to-primary focus:outline-none focus:ring-2 focus:ring-offset-2  transition-all duration-200 disabled:opacity-70"
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center">
@@ -210,7 +217,7 @@ export default function AddClassroomConfig() {
                 <button
                   type="button"
                   onClick={() => router.push('/config')}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  className="text-sm text-primary hover:text-primary font-medium transition-colors"
                 >
                   Cancel and return to configurations
                 </button>

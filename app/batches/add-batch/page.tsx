@@ -78,7 +78,7 @@ export default function AddBatchPage() {
           <button
             type="button"
             onClick={() => router.push("/batches")}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 "
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -115,7 +115,7 @@ export default function AddBatchPage() {
               <button
                 type="button"
                 onClick={handleAddStudents}
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-300"
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary transition-colors duration-300"
               >
                 Add
               </button>
@@ -160,7 +160,7 @@ export default function AddBatchPage() {
             <button
               type="submit"
               disabled={students.length === 0}
-              className={`mt-4 px-4 py-2 text-white rounded transition-colors duration-300 ${students.length === 0 ? "bg-indigo-700 cursor-not-allowed" : "bg-indigo-700 hover:bg-blue-600"
+              className={`mt-4 px-4 py-2 text-white rounded transition-colors duration-300 ${students.length === 0 ? "bg-primary cursor-not-allowed" : "bg-primary hover:bg-primary"
                 }`}
             >
               Submit Batch

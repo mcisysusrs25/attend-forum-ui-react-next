@@ -216,15 +216,15 @@ export default function AttendancePage() {
 
   return (
     <div className="bg-white shadow-lg rounded-md max-w-full">
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex space-x-4 mb-8">
           {/* Filter Buttons */}
           {['active', 'completed', ...(userType === 'professor' ? ['new'] : [])].map((status) => (
             <button
               key={status}
               onClick={() => handleFilterChange(status as 'active' | 'completed' | 'new')}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm ${filter === status
-                ? 'bg-indigo-700 text-white shadow-blue-200'
+              className={`px-6 py-2 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm ${filter === status
+                ? 'bg-primary text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                 }`}
             >
@@ -256,15 +256,15 @@ export default function AttendancePage() {
                 <div className="flex justify-between items-start">
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors duration-300">
                         {session.sessionTitle}
                       </h3>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${session.sessionStatus === 'active'
-                          ? 'bg-green-50 text-green-700 border border-green-200'
+                          ? 'bg-primary-active text-primary-white border'
                           : session.sessionStatus === 'completed'
-                            ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            ? 'bg-primary-completed text-primary-white border'
+                            : 'bg-primary-completed text-primary-white border'
                           }`}
                       >
                         {session.sessionStatus}
@@ -308,7 +308,7 @@ export default function AttendancePage() {
                             e.stopPropagation();
                             router.push(`sessions/update-session/${session.sessionID}`);
                           }}
-                          className="px-4 py-2 border border-amber-500 text-amber-500 rounded-lg hover:bg-amber-50 transition-all duration-300 text-sm font-medium"
+                          className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
                         >
                           Edit
                         </button>
@@ -318,7 +318,7 @@ export default function AttendancePage() {
                           e.stopPropagation();
                           handleDeleteClick(session);
                         }}
-                        className="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-all duration-300 text-sm font-medium"
+                        className="px-4 py-2 border border-gray-300 text-priary rounded-lg text-sm font-medium"
                       >
                         Delete
                       </button>
@@ -327,7 +327,7 @@ export default function AttendancePage() {
                           e.stopPropagation();
                           handleStatusChange(session.sessionID, session.sessionStatus === 'active' ? 'completed' : 'active');
                         }}
-                        className="px-4 py-2 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-all duration-300 text-sm font-medium"
+                        className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
                       >
                         {session.sessionStatus === 'active' ? 'Complete' : 'Activate'}
                       </button>
@@ -336,7 +336,7 @@ export default function AttendancePage() {
                           e.stopPropagation();
                           copyLinkToClipboard(session.sessionID);
                         }}
-                        className="px-4 py-2 border border-indigo-500 text-indigo-500 rounded-lg hover:bg-indigo-50 transition-all duration-300 text-sm font-medium"
+                        className="px-4 py-2 border border-gray-200 cursor-pointer text-primary rounded-lg text-sm font-medium"
                       >
                         Copy Link
                       </button>
@@ -347,7 +347,7 @@ export default function AttendancePage() {
                       e.stopPropagation();
                       openQRModal(session.sessionID);
                     }}
-                    className="px-4 py-2 border border-purple-500 text-purple-500 rounded-lg hover:bg-purple-50 transition-all duration-300 text-sm font-medium"
+                    className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
                   >
                     Show QR
                   </button>
@@ -356,7 +356,7 @@ export default function AttendancePage() {
                       e.stopPropagation();
                       router.push(`/sessions/${session.sessionID}`);
                     }}
-                    className="px-4 py-2 border border-emerald-500 text-emerald-500 rounded-lg hover:bg-emerald-50 transition-all duration-300 text-sm font-medium"
+                    className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
                   >
                     Details
                   </button>
@@ -376,7 +376,7 @@ export default function AttendancePage() {
               <div className="flex items-center gap-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-blue-600"
+                  className="h-6 w-6 text-primary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -422,7 +422,7 @@ export default function AttendancePage() {
               <div className="flex justify-end pt-4">
                 <button
                   onClick={() => setShowQRModal(false)}
-                  className="px-6 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  className="px-6 py-2.5 bg-primary text-white rounded-lg transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 >
                   Close
                 </button>

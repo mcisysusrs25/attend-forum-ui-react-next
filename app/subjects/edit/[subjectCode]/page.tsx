@@ -91,11 +91,23 @@ export default function EditSubjectPage() {
 
   return (
     <div className="bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+      <div className=" px-4 sm:px-6 lg:px-8 py-4">
+
+      <button
+          type="button"
+          onClick={() => router.push("/subjects")}
+          className="mb-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 "
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back to Subjects
+        </button>
+
         <h2 className="text-2xl font-bold mb-4">Edit Subject</h2>
 
         {error && <div className="mb-4 text-red-500">{error}</div>}
-        {success && <div className="mb-4 text-green-500">{success}</div>}
+        {success && <div className="mb-4 text-primary">{success}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -137,7 +149,7 @@ export default function EditSubjectPage() {
 
           <button
             type="submit"
-            className="mt-4 px-4 py-2 bg-indigo-700 text-white rounded hover:bg-blue-600 transition-colors duration-300"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary transition-colors duration-300"
           >
             Update Subject
           </button>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSessionAuthToken, getUserId } from "@/app/utils/authSession";
 import { fetchSubjects, deleteSubject } from "@/app/api/subject";
-import { Edit2, Trash2, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 interface Subject {
   _id: string;
@@ -77,14 +77,14 @@ export default function SubjectsPage() {
   };
 
   const handleAddNew = () => {
-    router.push("/subjects/new");
+    router.push("/subjects/add-subject");
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <div className="text-center p-8 rounded-xl shadow-sm bg-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-700 font-medium">Loading your subjects...</p>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default function SubjectsPage() {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary transition"
           >
             Try Again
           </button>
@@ -115,8 +115,8 @@ export default function SubjectsPage() {
       <div className="mx-auto">
         {subjects.length === 0 ? (
           <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <BookOpen size={32} className="text-indigo-600" />
+            <div className="w-20 h-20 border border-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+              <BookOpen size={32} className="" />
             </div>
             <h3 className="text-xl font-medium text-gray-800 mb-2">
               No subjects found
@@ -126,7 +126,7 @@ export default function SubjectsPage() {
             </p>
             <button
               onClick={handleAddNew}
-              className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+              className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary transition"
             >
               Add Subject
             </button>
@@ -140,7 +140,7 @@ export default function SubjectsPage() {
               >
                 {/* Left Side: Subject Details */}
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 rounded-md bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-lg">
+                  <div className="w-12 h-12 rounded-md bg-white flex items-center justify-center text-primary border border-gray-200 font-semibold text-lg">
                     {subject.subjectCode.slice(0, 2)}
                   </div>
                   <div>
@@ -148,15 +148,7 @@ export default function SubjectsPage() {
                       {subject.title}
                     </h3>
                     <p className="text-gray-600 text-sm">
-                      Code: {subject.subjectCode}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Added on{" "}
-                      {new Date(subject.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {subject.subjectCode}
                     </p>
                   </div>
                 </div>
@@ -165,17 +157,16 @@ export default function SubjectsPage() {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleEdit(subject.subjectCode)}
-                    className="px-4 py-2 rounded-md bg-indigo-700 text-white hover:bg-indigo-800 transition"
-                    aria-label="Edit subject"
+                    className="px-4 py-2 rounded-md border border-gray-300"
                   >
-                    <Edit2 size={16} />
+  Edit
                   </button>
                   <button
                     onClick={() => handleDelete(subject.subjectCode)}
-                    className="px-4 py-2 rounded-md bg-red-700 text-white hover:bg-red-800 transition"
+                    className="px-4 py-2 rounded-md border border-gray-300 text-primary"
                     aria-label="Delete subject"
                   >
-                    <Trash2 size={16} />
+                    Delete
                   </button>
                 </div>
               </div>

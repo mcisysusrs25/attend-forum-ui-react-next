@@ -53,15 +53,15 @@ const LandingPage = () => {
             
           </div>
           <div className="hidden md:flex items-center space-x-8 text-gray-700">
-            <a href="#features" className="hover:text-indigo-600 transition">Home</a>
-            <a href="#features" className="hover:text-indigo-600 transition">Features</a>
-            <a href="#how-it-works" className="hover:text-indigo-600 transition">How it Works</a>
-            <a href="https://mcisysusrs25.github.io/attendforumstudent/auth.html" className="hover:text-indigo-600 transition">Student Login</a>
-            <a href="/auth/login" className="hover:text-indigo-600 transition">Faculty Login</a>
+            <a href="#features" className="hover:text-primary transition">Home</a>
+            <a href="#features" className="hover:text-primary transition">Features</a>
+            <a href="#how-it-works" className="hover:text-primary transition">How it Works</a>
+            <a href="https://mcisysusrs25.github.io/attendforumstudent/auth.html" className="hover:text-primary transition">Student Login</a>
+            <a href="/auth/login" className="hover:text-primary transition">Faculty Login</a>
           </div>
           <div>
             <Link href="/signup">
-              <button className="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition shadow-md">
+              <button className="bg-primary text-white px-6 py-2 rounded-full hover:bg-blue-700 transition shadow-md">
                 Get Started
               </button>
             </Link>
@@ -83,7 +83,7 @@ const LandingPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Attendance Tracking <span className="text-indigo-600">Reimagined</span>
+              Attendance Tracking <span className="text-primary">Reimagined</span>
             </motion.h2>
             <motion.p
               className="text-xl text-gray-600 mb-8"
@@ -100,12 +100,12 @@ const LandingPage = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Link href="/auth/login">
-                <button className="bg-indigo-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition shadow-md text-lg">
+                <button className="bg-primary text-white px-8 py-3 rounded-full hover:bg-blue-700 transition shadow-md text-lg">
                   Login / Sign Up as Faculty
                 </button>
               </Link>
               <Link href="https://mcisysusrs25.github.io/attendforumstudent/auth.html">
-                <button className="bg-white text-indigo-600 border border-indigo-600 px-8 py-3 rounded-full hover:bg-blue-50 transition text-lg">
+                <button className="bg-white text-primary border border-primary px-8 py-3 rounded-full hover:bg-blue-50 transition text-lg">
                   Sign up as Student
                 </button>
               </Link>
@@ -142,7 +142,7 @@ const LandingPage = () => {
               {[1, 2, 3, 4, 5, 6].map((_, index) => (
                 <button
                   key={index}
-                  className={`w-3 h-3 rounded-full transition-colors ${index === currentIndex ? 'bg-indigo-600' : 'bg-gray-300'
+                  className={`w-3 h-3 rounded-full transition-colors ${index === currentIndex ? 'bg-primary' : 'bg-gray-300'
                     }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
@@ -222,13 +222,13 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-indigo-600 text-white">
+      <section className="py-20 bg-primary text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Attendance Management?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">Join thousands of educators who are saving time and improving accuracy with Professor Portal.</p>
           <div className="flex justify-center gap-4 flex-wrap">
             <Link href="/auth/login">
-              <button className="bg-white text-indigo-600 px-8 py-3 rounded-full hover:bg-gray-100 transition shadow-md text-lg font-semibold">
+              <button className="bg-white text-primary px-8 py-3 rounded-full hover:bg-gray-100 transition shadow-md text-lg font-semibold">
                 Start for free
               </button>
             </Link>
@@ -279,7 +279,7 @@ const StepCard: React.FC<StepCardProps> = ({ number, title, description }) => {
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xl font-bold">
+      <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white text-xl font-bold">
         {number}
       </div>
       <h3 className="text-xl font-bold text-gray-800 mb-2 mt-4">{title}</h3>

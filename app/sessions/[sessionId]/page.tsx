@@ -215,7 +215,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
       <button
           type="button"
           onClick={() => router.push("/sessions")}
-          className="mb-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="mb-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 "
         >
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -229,7 +229,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
           {loading ? (
             <div className="flex justify-center items-center h-[200px]">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                 <p className="text-lg text-gray-600">Loading session details...</p>
               </div>
             </div>
@@ -243,7 +243,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                 <p className="text-gray-600 mb-6">{error}</p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary transition-colors duration-200"
                 >
                   <span className="mr-2">↻</span>
                   Retry
@@ -259,7 +259,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Session not found</h3>
                 <button
                   onClick={() => router.push('/')}
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary transition-colors duration-200"
                 >
                   <span className="mr-2">←</span>
                   Go Back
@@ -274,7 +274,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                   <div className="flex items-center space-x-4">
                     <button
                       onClick={() => handleDownload('excel')}
-                      className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                      className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors duration-200"
                     >
                       <Download className="w-5 h-5 mr-2" />
                       Download Excel
@@ -293,7 +293,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <BookOpen className="w-6 h-6 text-blue-600" />
+                    <BookOpen className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Description</p>
@@ -303,7 +303,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
 
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <Activity className="w-6 h-6 text-blue-600" />
+                    <Activity className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Subject Code</p>
@@ -313,7 +313,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
 
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <User className="w-6 h-6 text-blue-600" />
+                    <User className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Created By</p>
@@ -323,7 +323,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
 
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <Calendar className="w-6 h-6 text-blue-600" />
+                    <Calendar className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Valid From</p>
@@ -333,7 +333,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
 
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <Calendar className="w-6 h-6 text-blue-600" />
+                    <Calendar className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Valid To</p>
@@ -343,7 +343,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
 
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <Clock className="w-6 h-6 text-blue-600" />
+                    <Clock className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Session ID</p>
@@ -360,7 +360,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
           {loading ? (
             <div className="flex justify-center items-center h-[200px]">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                 <p className="text-lg text-gray-600">Loading attendance data...</p>
               </div>
             </div>
@@ -370,7 +370,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
             <>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div className="flex items-center space-x-3">
-                  <Users className="w-6 h-6 text-blue-600" />
+                  <Users className="w-6 h-6 text-primary" />
                   <h2 className="text-2xl font-bold text-gray-900">Student Attendance</h2>
                 </div>
                 
@@ -380,7 +380,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                         type="checkbox"
                         checked={showAttendancePanel}
                         onChange={() => setShowAttendancePanel(!showAttendancePanel)}
-                        className="form-checkbox h-5 w-5 text-blue-600 rounded"
+                        className="form-checkbox h-5 w-5 text-primary rounded"
                       />
                       <span className="text-sm font-medium text-gray-700">Mark Attendance</span>
                     </label>
@@ -389,7 +389,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                       <button
                         onClick={handleMarkAsPresent}
                         disabled={selectedStudents.length === 0}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
+                        className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
                       >
                         Mark as Present
                       </button>
@@ -427,7 +427,7 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                                     type="checkbox"
                                     checked={selectedStudents.includes(student.studentID)}
                                     onChange={() => handleCheckboxChange(student.studentID)}
-                                    className="form-checkbox h-5 w-5 text-blue-600 rounded"
+                                    className="form-checkbox h-5 w-5 text-white rounded"
                                   />
                                 )}
                               </td>
@@ -437,8 +437,8 @@ const handleDownload = (format: 'excel' | 'pdf') => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${student.attendanceStatus === 'Present'
-                                  ? 'bg-green-100 text-green-800'
+                                className={`inline-flex items-center px-6 py-3 rounded-full text-xs font-medium ${student.attendanceStatus === 'Present'
+                                  ? 'bg-green-200 text-green-700'
                                   : 'bg-red-100 text-red-800'
                                   }`}
                               >

@@ -84,8 +84,19 @@ export default function EditConfigPage() {
 
   return (
     <div className="bg-white min-h-screen">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6">
-        <h2 className="text-2xl font-bold mb-4">Edit Configuration</h2>
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <button
+            type="button"
+            onClick={() => router.push("/config")}
+            className="mb-8 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 "
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Classes
+          </button>
+
+        <h2 className="text-2xl font-bold mb-4">Edit Class Configuration</h2>
         {error && <p className="mb-4 text-red-500">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -101,8 +112,8 @@ export default function EditConfigPage() {
             <input type="text" value={configData.longitude} onChange={(e) => setConfigData({ ...configData, longitude: e.target.value })} required className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
           </div>
           <div className="flex justify-between">
-            <button type="button" onClick={handleGetCurrentLocation} className="mb-6 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Use Current Location</button>
-            <button type="submit" className="mb-6 px-4 py-2 bg-indigo-700 text-white rounded hover:bg-blue-600">Update Configuration</button>
+            <button type="button" onClick={handleGetCurrentLocation} className="mb-6 px-4 py-2 bg-primary text-white rounded hover:bg-primary">Use Current Location</button>
+            <button type="submit" className="mb-6 px-4 py-2 bg-primary text-white rounded hover:bg-primary">Update Configuration</button>
           </div>
         </form>
       </div>

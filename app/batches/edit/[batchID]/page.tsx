@@ -113,9 +113,6 @@ export default function EditBatchPage() {
     <div className="bg-white min-h-screen">
       <div className="mx-auto sm:px-2">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-indigo-700 px-6 py-4">
-            <h2 className="text-2xl font-bold text-white">Edit Batch</h2>
-          </div>
           
           <div className="p-6">
             {error && (
@@ -134,15 +131,15 @@ export default function EditBatchPage() {
             )}
 
             {successMessage && (
-              <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-md">
+              <div className="mb-6 p-4 bg-green-200 border-l-4 border-primary rounded-md">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <svg className="h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm text-green-700">{successMessage}</p>
+                    <p className="text-sm text-primary">{successMessage}</p>
                   </div>
                 </div>
               </div>
@@ -152,7 +149,7 @@ export default function EditBatchPage() {
               <button
                 type="button"
                 onClick={() => router.push("/batches")}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 "
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -164,8 +161,8 @@ export default function EditBatchPage() {
                 type="submit"
                 onClick={handleSubmit}
                 disabled={loading}
-                className={`inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                  loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                className={`inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2  ${
+                  loading ? 'bg-primary cursor-not-allowed' : 'bg-primary hover:bg-primary'
                 }`}
               >
                 {loading ? (
@@ -195,7 +192,7 @@ export default function EditBatchPage() {
                   value={batchLabel}
                   onChange={(e) => setBatchLabel(e.target.value)}
                   required
-                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none  focus:border-primary sm:text-sm"
                 />
               </div>
 
@@ -208,12 +205,12 @@ export default function EditBatchPage() {
                     onChange={(e) => setStudentInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="e.g., Y008888801, Y008888802"
-                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none  focus:border-primary sm:text-sm"
                   />
                   <button
                     type="button"
                     onClick={handleAddStudents}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -229,7 +226,7 @@ export default function EditBatchPage() {
                   <h3 className="text-lg font-medium text-gray-900">Students List</h3>
                   <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-green-100 text-green-800">
-                      <span className="w-2 h-2 mr-1 bg-green-400 rounded-full"></span>
+                      <span className="w-2 h-2 mr-1 bg-green-600 rounded-full"></span>
                       Active: {activeStudents.length}
                     </span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-red-100 text-red-800">
@@ -254,19 +251,19 @@ export default function EditBatchPage() {
                           const isRemoved = removedStudents.includes(id);
                           const isNew = !initialStudents.includes(id) && !isRemoved;
                           return (
-                            <tr key={id} className={isRemoved ? "bg-gray-50" : isNew ? "bg-green-50" : ""}>
+                            <tr key={id} className={isRemoved ? "bg-gray-50" : isNew ? "bg-green-100" : ""}>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{id}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm">
                                 {isRemoved ? (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                     Marked for removal
                                   </span>
                                 ) : isNew ? (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-500 text-primary">
                                     Newly added
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border border-gray-300 text-pr">
                                     Active
                                   </span>
                                 )}
@@ -276,7 +273,7 @@ export default function EditBatchPage() {
                                   <button 
                                     type="button"
                                     onClick={() => handleRestoreStudent(id)} 
-                                    className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                    className="inline-flex items-center px-3 py-1 border border-gray-300 text-xs rounded-md font-medium"
                                   >
                                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>

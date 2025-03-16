@@ -38,7 +38,7 @@ export default function ClassroomConfig() {
       }
       
       try {
-        const result = await fetchClasssConfigurationsByProfessorID(authToken, userId);
+        const result = await fetchClasssConfigurationsByProfessorID(authToken!, userId!);
         setConfigurations(result?.data || []);
       } catch (err) {
         console.error('Error fetching configurations:', err);
@@ -73,11 +73,9 @@ export default function ClassroomConfig() {
 
   return (
     <div className="mx-auto p-4 bg-white shadow-xl rounded-xl">
-
-
       {isLoading && configurations.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-          <Loader2 size={40} className="animate-spin mb-4 text-indigo-500" />
+          <Loader2 size={40} className="animate-spin mb-4 text-primary" />
           <p className="text-lg">Loading your configurations...</p>
         </div>
       ) : error ? (
@@ -86,7 +84,7 @@ export default function ClassroomConfig() {
           <p className="text-lg font-medium">{error}</p>
           <button 
             onClick={() => setFetchTrigger(prev => prev + 1)}
-            className="mt-4 text-indigo-600 hover:text-indigo-800 underline"
+            className="mt-4 text-primary hover:text-primary underline"
           >
             Try again
           </button>
@@ -98,7 +96,7 @@ export default function ClassroomConfig() {
           <p className="text-gray-400 mb-6 text-center max-w-md">Add your first classroom location to start tracking attendance with geolocation</p>
           <button
             onClick={() => router.push('/config/add')}
-            className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2"
+            className="bg-primary text-white px-5 py-2 rounded-lg hover:bg-primary transition-colors duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             Add Your First Location
@@ -108,12 +106,12 @@ export default function ClassroomConfig() {
         <div className="grid grid-cols-1 gap-6">
           {configurations.map((config) => (
             <div 
-              key={config._id} 
+              key={config._id || config.classConfigId} 
               className="border border-gray-200 p-6 rounded-xl flex justify-between items-center hover:shadow-md transition-shadow duration-300 bg-white"
             >
               <div className="flex items-start gap-4">
-                <div className="bg-indigo-100 p-3 rounded-lg">
-                  <MapPin size={24} className="text-indigo-600" />
+                <div className="border border-gray-300 p-3 rounded-lg">
+                  <MapPin size={24} className="text-primary" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-xl text-gray-800 mb-1">{config.label}</h3>
@@ -122,24 +120,18 @@ export default function ClassroomConfig() {
                     <span className="mx-1 text-gray-300">|</span>
                     <span>Long: {config.longitude.toFixed(5)}</span>
                   </p>
-                  <p className="text-xs text-gray-400 mt-2">ID: {config.classConfigId}</p>
-                  {config.createdAt && (
-                    <p className="text-xs text-gray-400">
-                      Created: {new Date(config.createdAt).toLocaleDateString()}
-                    </p>
-                  )}
                 </div>
               </div>
               <div className="flex space-x-4">
                 <button 
-                  className="bg-indigo-700 py-2 px-3 rounded-md text-white hover:bg-indigo-600  flex items-center gap-1 font-medium"
+                  className="border border-gray-300 py-2 px-3 rounded-md text-primary flex items-center gap-2 font-medium"
                   onClick={() => router.push(`config/edit/${config.classConfigId}`)}
                 >
                   <Edit size={16} />
                   Edit
                 </button>
                 <button 
-                  className="text-white bg-red-700 px-3 py-2 rounded-md hover:bg-red-600 flex items-center gap-1 font-medium"
+                  className="border border-gray-300 px-3 py-2 rounded-md flex items-center gap-1 font-medium"
                   onClick={() => handleDelete(config.classConfigId!)}
                   disabled={deleteInProgress === config.classConfigId}
                 >

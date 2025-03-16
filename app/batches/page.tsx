@@ -86,14 +86,14 @@ export default function BatchesPage() {
 
   const getBatchStatusColor = (studentCount: number) => {
     if (studentCount === 0) return "bg-gray-100 text-gray-800";
-    if (studentCount < 5) return "bg-yellow-100 text-yellow-800";
-    if (studentCount < 15) return "bg-blue-100 text-blue-800";
-    return "bg-green-100 text-green-800";
+    if (studentCount < 5) return " text-primary";
+    if (studentCount < 15) return " text-primary";
+    return " text-primary";
   };
 
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
       
         {/* Success and Error Messages */}
         {error && (
@@ -121,11 +121,11 @@ export default function BatchesPage() {
         )}
 
         {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-md">
+          <div className="mb-6 p-4  border-l-4 border-primary rounded-md">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-5 w-5 text-green-400"
+                  className="h-5 w-5 text-primary"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -138,7 +138,7 @@ export default function BatchesPage() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-green-700">{successMessage}</p>
+                <p className="text-sm text-primary">{successMessage}</p>
               </div>
             </div>
           </div>
@@ -169,7 +169,7 @@ export default function BatchesPage() {
                   <input
                     type="text"
                     placeholder="Search batches..."
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1  focus:border-primary sm:text-sm"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -177,7 +177,7 @@ export default function BatchesPage() {
               </div>
               <div className="flex items-center text-sm text-gray-500">
                 <span className="mr-2">Total batches: {batches.length}</span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span className="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium border border-gray-300 text-primary">
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                   </svg>
@@ -191,7 +191,7 @@ export default function BatchesPage() {
           {loading ? (
             <div className="flex justify-center items-center py-16">
               <svg
-                className="animate-spin h-8 w-8 text-blue-500"
+                className="animate-spin h-8 w-8 text-primary"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -237,7 +237,7 @@ export default function BatchesPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="mt-4 inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800"
+                  className="mt-4 inline-flex items-center px-3 py-1.5 text-sm font-medium text-primary hover:text-primary"
                 >
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -271,7 +271,7 @@ export default function BatchesPage() {
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+                            <div className="flex-shrink-0 h-10 w-10 text-primary border border-gray-300 rounded-md flex items-center justify-center font-bold">
                               {batch.batchLabel.slice(0, 2).toUpperCase()}
                             </div>
                             <div className="ml-4">
@@ -288,7 +288,7 @@ export default function BatchesPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => handleEdit(batch.batchID)}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-700 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2"
+                            className="inline-flex items-center px-4 py-2 border text-xs font-medium rounded-md text-primary  border-gray-300  mr-2"
                           >
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -297,7 +297,7 @@ export default function BatchesPage() {
                           </button>
                           <button
                             onClick={() => handleDelete(batch.batchID)}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-xs font-medium rounded-md text-white bg-red-700 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            className="inline-flex items-center px-4 py-2 border text-xs font-medium rounded-md text-primary border-gray-300"
                           >
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -338,7 +338,7 @@ export default function BatchesPage() {
             <div className="px-6 py-4 bg-gray-50 flex justify-end">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3"
+                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2  mr-3"
               >
                 Cancel
               </button>
