@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSessionAuthToken, getUserId } from '@/app/utils/authSession';
-import { fetchBatchesByProfessorId, fetchSubjectsByProfessorId, addSession } from '@/app/api/session';
+import { fetchBatchesByProfessorId, addSession } from '@/app/api/session';
 import { fetchClasssConfigurationsByProfessorID } from '@/app/api/config';
 import { fetchSubjects } from '@/app/api/subject';
 

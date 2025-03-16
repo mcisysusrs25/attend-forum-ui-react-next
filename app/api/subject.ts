@@ -165,7 +165,7 @@ export async function addSubject(subjectData: Subject, authToken: string) {
       console.log('Data fetched successfully:', data);
       return data;
     } catch (error) {
-      // console.error('Error fetching subject:', error);
+      console.error('Error fetching subject:', error);
       // throw error instanceof Error ? error : new Error('An error occurred');
     }
   }
