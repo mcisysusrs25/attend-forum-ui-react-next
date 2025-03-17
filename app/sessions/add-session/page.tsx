@@ -130,16 +130,7 @@ export default function AddSessionPage() {
     
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
-  // new added function. 
-
-  const convertUTCToLocal = (utcDateString: string): string => {
-    if (!utcDateString) return "";
-    
-    const date = new Date(utcDateString);
-    return formatDateForInput(date);
-  };
-
-
+  
   // Set default times on initial load
   useEffect(() => {
     const now = new Date();
@@ -150,6 +141,7 @@ export default function AddSessionPage() {
 
     setSessionValidFrom(formatDateForInput(now));
     setSessionValidTo(formatDateForInput(twentyMinsLater));
+
   }, []);
 
   // Authentication check

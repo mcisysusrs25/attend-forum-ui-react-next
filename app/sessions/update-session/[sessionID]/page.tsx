@@ -75,10 +75,6 @@ export default function UpdateSessionPage() {
 
         const session = await fetchSessionDetails(sessionID, authToken);
 
-        const formatDateTime = (dateTime: string) => {
-          const date = new Date(dateTime);
-          return date.toISOString().slice(0, 16);
-        };
 
         setSessionTitle(session.sessionTitle);
         setSessionDescription(session.sessionDescription);
