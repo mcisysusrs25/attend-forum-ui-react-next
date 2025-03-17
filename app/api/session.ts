@@ -280,23 +280,44 @@ export async function fetchSessions(userType: string, userID: string, authToken:
     },
     authToken: string
   ) {
-    // Function to format datetime as "YYYY-MM-DDTHH:mm"
-    function formatDateTime(datetime: string): string {
+    // Create a copy of the session data to avoid mutating the original
+    const processedSessionData = { ...sessionData };
+    
+    // Function to format datetime as "YYYY-MM-DDTHH:mm" format consistently
+    function formatToConsistentFormat(datetime: string): string {
       const date = new Date(datetime);
       const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+      const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
       const hours = String(date.getHours()).padStart(2, "0");
       const minutes = String(date.getMinutes()).padStart(2, "0");
-  
       return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
   
-    // Format the datetime strings to "YYYY-MM-DDTHH:mm"
-    sessionData.sessionValidFrom = formatDateTime(sessionData.sessionValidFrom);
-    sessionData.sessionValidTo = formatDateTime(sessionData.sessionValidTo);
-  
-    console.log("Session data with formatted timestamps:", sessionData);
+    // Check the TIME_SETTINGS environment variable
+    const timeSettings = process.env.TIME_SETTINGS;
+    
+    if (timeSettings === "local_system") {
+      // For local_system, adjust for timezone before formatting
+      // Create Date objects from the input strings
+      const fromDate = new Date(sessionData.sessionValidFrom);
+      const toDate = new Date(sessionData.sessionValidTo);
+      
+      // Convert to UTC but keep the format consistent
+      const utcFromDate = new Date(fromDate.getTime());
+      const utcToDate = new Date(toDate.getTime());
+      
+      // Format in the consistent YYYY-MM-DDTHH:mm format
+      processedSessionData.sessionValidFrom = formatToConsistentFormat(utcFromDate.toISOString());
+      processedSessionData.sessionValidTo = formatToConsistentFormat(utcToDate.toISOString());
+    } else {
+      // For other settings, just format without timezone adjustments
+      processedSessionData.sessionValidFrom = formatToConsistentFormat(sessionData.sessionValidFrom);
+      processedSessionData.sessionValidTo = formatToConsistentFormat(sessionData.sessionValidTo);
+    }
+   
+    console.log("time settings" + timeSettings);
+    console.log("Session data with processed timestamps:", processedSessionData);
   
     try {
       const response = await fetch(`${process.env.API_BASE_URL}/sessions/add`, {
@@ -305,7 +326,7 @@ export async function fetchSessions(userType: string, userID: string, authToken:
           "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify(sessionData),
+        body: JSON.stringify(processedSessionData),
       });
   
       if (!response.ok) {
