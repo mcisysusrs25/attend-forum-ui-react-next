@@ -280,27 +280,23 @@ export async function fetchSessions(userType: string, userID: string, authToken:
     },
     authToken: string
   ) {
-    // Function to apply timezone offset
-    function applyTimezoneOffset(datetime: string): string {
+    // Function to convert local time to UTC
+    function convertLocalToUTC(datetime: string): string {
       const date = new Date(datetime);
-      const offsetMinutes = date.getTimezoneOffset();
-      const offsetHours = Math.abs(offsetMinutes) / 60;
-      const offsetSign = offsetMinutes > 0 ? "-" : "+";
-      const offsetString = `${offsetSign}${String(Math.floor(offsetHours)).padStart(2, "0")}:00`;
-  
-      return datetime + offsetString; // Append the offset
+      const utcDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return utcDate.toISOString();
     }
   
     // Check the TIME_SETTINGS environment variable
     const timeSettings = process.env.TIME_SETTINGS;
   
-    // Apply timezone offset only if TIME_SETTINGS is set to "local_system"
+    // Convert local time to UTC only if TIME_SETTINGS is set to "local_system"
     if (timeSettings === "local_system") {
-      sessionData.sessionValidFrom = applyTimezoneOffset(sessionData.sessionValidFrom);
-      sessionData.sessionValidTo = applyTimezoneOffset(sessionData.sessionValidTo);
+      sessionData.sessionValidFrom = convertLocalToUTC(sessionData.sessionValidFrom);
+      sessionData.sessionValidTo = convertLocalToUTC(sessionData.sessionValidTo);
     }
   
-    console.log("Updated session data with timezone:", sessionData);
+    console.log("Updated session data with UTC time:", sessionData);
   
     try {
       const response = await fetch(`${process.env.API_BASE_URL}/sessions/add`, {
