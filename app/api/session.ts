@@ -177,6 +177,44 @@ export async function fetchSessions(userType: string, userID: string, authToken:
     }
   }
   
+  // export async function addSession(sessionData: {
+  //   sessionTitle: string;
+  //   sessionDescription: string;
+  //   sessionValidFrom: string;
+  //   sessionValidTo: string;
+  //   subjectCode: string;
+  //   batchID: string;
+  //   classConfigId : string,
+  //   createdBy: string;
+  // }, authToken: string) {
+
+  //   console.log(sessionData);
+
+  //   console.log("this is sending as " + sessionData.classConfigId);
+  //   try {
+  //     const response = await fetch(`${process.env.API_BASE_URL}/sessions/add`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${authToken}`,
+  //       },
+  //       body: JSON.stringify(sessionData),
+  //     });
+  
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.message || 'Failed to add session');
+  //     }
+  
+  //     const data = await response.json();
+  //     return data;
+  //   } catch (error) {
+  //     console.error('Error adding session:', error);
+  //     throw error;
+  //   }
+  // }
+
+
   export async function addSession(sessionData: {
     sessionTitle: string;
     sessionDescription: string;
@@ -184,11 +222,27 @@ export async function fetchSessions(userType: string, userID: string, authToken:
     sessionValidTo: string;
     subjectCode: string;
     batchID: string;
-    classConfigId : string,
+    classConfigId: string;
     createdBy: string;
   }, authToken: string) {
-
-    console.log("this is sending as " + sessionData.classConfigId);
+  
+    // Function to apply timezone offset
+    function applyTimezoneOffset(datetime: string): string {
+      const date = new Date(datetime);
+      const offsetMinutes = date.getTimezoneOffset();
+      const offsetHours = Math.abs(offsetMinutes) / 60;
+      const offsetSign = offsetMinutes > 0 ? "-" : "+";
+      const offsetString = `${offsetSign}${String(Math.floor(offsetHours)).padStart(2, "0")}:00`;
+  
+      return datetime + offsetString;  // Append the offset
+    }
+  
+    // Apply timezone to session times
+    sessionData.sessionValidFrom = applyTimezoneOffset(sessionData.sessionValidFrom);
+    sessionData.sessionValidTo = applyTimezoneOffset(sessionData.sessionValidTo);
+  
+    console.log("Updated session data with timezone:", sessionData);
+  
     try {
       const response = await fetch(`${process.env.API_BASE_URL}/sessions/add`, {
         method: 'POST',
@@ -211,6 +265,7 @@ export async function fetchSessions(userType: string, userID: string, authToken:
       throw error;
     }
   }
+  
 
 export async function fetchSessionDetails(sessionId: string, authToken: string) {
   try {

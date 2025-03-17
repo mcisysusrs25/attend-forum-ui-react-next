@@ -120,15 +120,33 @@ export default function AddSessionPage() {
   const authToken = getSessionAuthToken();
   const userID = getUserId();
 
-  // Format date for datetime-local input
   const formatDateForInput = (date: Date): string => {
-    return date.toISOString().slice(0, 16);
+    // Convert to local ISO string format YYYY-MM-DDTHH:mm
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
+  // new added function. 
+
+  const convertUTCToLocal = (utcDateString: string): string => {
+    if (!utcDateString) return "";
+    
+    const date = new Date(utcDateString);
+    return formatDateForInput(date);
+  };
+
 
   // Set default times on initial load
   useEffect(() => {
     const now = new Date();
+    console.log("todays date" + now)
     const twentyMinsLater = new Date(now.getTime() + 20 * 60000);
+    console.log("20 mins later date" + twentyMinsLater)
+
 
     setSessionValidFrom(formatDateForInput(now));
     setSessionValidTo(formatDateForInput(twentyMinsLater));
@@ -171,7 +189,7 @@ export default function AddSessionPage() {
           setLoadingResources(prev => ({ ...prev, configurations: false }));
         })
         .catch(error => {
-          console.error('Error fetching class configurations:', error);
+          console.error('Error fetching class:', error);
           setDataErrors(prev => ({
             ...prev,
             configurations: 'Failed to load classroom configurations. Please try refreshing the page.'
@@ -217,7 +235,7 @@ export default function AddSessionPage() {
   useEffect(() => {
     if (!loadingResources.batches && !loadingResources.subjects && !loadingResources.configurations) {
       setIsLoading(false);
-    } 
+    }
     if (!batches.length || !subjects.length || !classConfigurations.length) {
       setIsDataNotConfigured(true);
     } else {
@@ -360,11 +378,18 @@ export default function AddSessionPage() {
     setIsSubmitting(true);
 
     try {
+
+      const convertLocalToUTC = (localDateTimeString: string): string => {
+        const date = new Date(localDateTimeString);
+        return date.toISOString();
+      };
+      
+
       const sessionData: SessionData = {
         sessionTitle,
         sessionDescription,
-        sessionValidFrom,
-        sessionValidTo,
+        sessionValidFrom: sessionValidFrom,
+        sessionValidTo: sessionValidTo,
         subjectCode,
         batchID,
         classConfigId,
@@ -403,7 +428,7 @@ export default function AddSessionPage() {
     }
   };
 
-  function handleBacktoSessions(){
+  function handleBacktoSessions() {
     router.push("/sessions")
   }
 
@@ -446,7 +471,7 @@ export default function AddSessionPage() {
     );
   }
 
-  
+
   return (
     <div className="bg-white min-h-screen">
       <div className="max-w-full px-4 sm:px-6 lg:px-8 py-4">

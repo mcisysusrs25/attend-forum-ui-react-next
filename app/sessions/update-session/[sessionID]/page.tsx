@@ -82,8 +82,11 @@ export default function UpdateSessionPage() {
 
         setSessionTitle(session.sessionTitle);
         setSessionDescription(session.sessionDescription);
-        setSessionValidFrom(formatDateTime(session.sessionValidFrom));
-        setSessionValidTo(formatDateTime(session.sessionValidTo));
+
+        setSessionValidFrom(convertUTCToLocal(session.sessionValidFrom));
+        setSessionValidTo(convertUTCToLocal(session.sessionValidTo));
+
+
         setSubjectCode(session.subjectCode);
         setBatchID(session.batchID);
         setClassConfigId(session.classConfigId);
@@ -98,6 +101,26 @@ export default function UpdateSessionPage() {
 
     loadSession();
   }, [sessionID, authToken, userID, router]);
+  
+
+  const formatDateForInput = (date: Date): string => {
+    // Convert to local ISO string format YYYY-MM-DDTHH:mm
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+  // new added function. 
+
+  const convertUTCToLocal = (utcDateString: string): string => {
+    if (!utcDateString) return "";
+    
+    const date = new Date(utcDateString);
+    return formatDateForInput(date);
+  };
 
   useEffect(() => {
     if (!authToken || !userID) {
