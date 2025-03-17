@@ -280,23 +280,23 @@ export async function fetchSessions(userType: string, userID: string, authToken:
     },
     authToken: string
   ) {
-    // Function to convert local time to UTC
-    function convertLocalToUTC(datetime: string): string {
+    // Function to format datetime as "YYYY-MM-DDTHH:mm"
+    function formatDateTime(datetime: string): string {
       const date = new Date(datetime);
-      const utcDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-      return utcDate.toISOString();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+  
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
   
-    // Check the TIME_SETTINGS environment variable
-    const timeSettings = process.env.TIME_SETTINGS;
+    // Format the datetime strings to "YYYY-MM-DDTHH:mm"
+    sessionData.sessionValidFrom = formatDateTime(sessionData.sessionValidFrom);
+    sessionData.sessionValidTo = formatDateTime(sessionData.sessionValidTo);
   
-    // Convert local time to UTC only if TIME_SETTINGS is set to "local_system"
-    if (timeSettings === "local_system") {
-      sessionData.sessionValidFrom = convertLocalToUTC(sessionData.sessionValidFrom);
-      sessionData.sessionValidTo = convertLocalToUTC(sessionData.sessionValidTo);
-    }
-  
-    console.log("Updated session data with UTC time:", sessionData);
+    console.log("Session data with formatted timestamps:", sessionData);
   
     try {
       const response = await fetch(`${process.env.API_BASE_URL}/sessions/add`, {
