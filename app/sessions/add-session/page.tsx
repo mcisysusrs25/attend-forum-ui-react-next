@@ -371,12 +371,6 @@ export default function AddSessionPage() {
 
     try {
 
-      const convertLocalToUTC = (localDateTimeString: string): string => {
-        const date = new Date(localDateTimeString);
-        return date.toISOString();
-      };
-      
-
       const sessionData: SessionData = {
         sessionTitle,
         sessionDescription,
