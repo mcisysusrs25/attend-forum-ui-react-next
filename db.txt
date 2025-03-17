@@ -1,0 +1,364 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+
+// Types (unchanged)
+interface Session {
+    id: string;
+    name: string;
+    status: 'active' | 'new' | 'completed';
+    startDate: string;
+    endDate: string;
+    attendees: number;
+    totalStudents: number;
+}
+
+interface Subject {
+    id: string;
+    name: string;
+    totalConfigs: number;
+    totalSessions: number;
+    attendanceRate: number;
+}
+
+interface Batch {
+    id: string;
+    name: string;
+    totalStudents: number;
+    engagementScore: number;
+    attendanceRate: number;
+}
+
+interface Review {
+    id: string;
+    studentName: string;
+    batchName: string;
+    rating: number;
+    comment: string;
+    date: string;
+}
+
+interface AnalyticsData {
+    sessions: {
+        active: number;
+        new: number;
+        completed: number;
+        monthly: {
+            month: string;
+            year: number;
+            active: number;
+            new: number;
+            completed: number;
+        }[];
+    };
+    subjects: Subject[];
+    batches: Batch[];
+    currentlyActiveSession: Session | null;
+    totalSubjects: number;
+    totalConfigs: number;
+    totalAttendanceSessions: number;
+    totalStudents: number;
+    attendanceStudents: number;
+    overallEngagementScore: number;
+    topReviews: Review[];
+}
+
+// Dummy data (unchanged)
+const generateDummyData = (): AnalyticsData => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const years = [2023, 2024, 2025];
+
+    const monthlyData = months.map((month) => ({
+        month,
+        year: years[Math.floor(Math.random() * years.length)],
+        active: Math.floor(Math.random() * 20) + 5,
+        new: Math.floor(Math.random() * 15),
+        completed: Math.floor(Math.random() * 25) + 10
+    }));
+
+    const subjects = [
+        { id: '1', name: 'Mathematics', totalConfigs: 12, totalSessions: 45, attendanceRate: 87 },
+        { id: '2', name: 'Physics', totalConfigs: 8, totalSessions: 32, attendanceRate: 79 },
+        { id: '3', name: 'Chemistry', totalConfigs: 10, totalSessions: 38, attendanceRate: 83 },
+        { id: '4', name: 'Biology', totalConfigs: 9, totalSessions: 35, attendanceRate: 85 },
+        { id: '5', name: 'Computer Science', totalConfigs: 15, totalSessions: 52, attendanceRate: 91 },
+    ];
+
+    const batches = [
+        { id: '1', name: 'Morning Batch A', totalStudents: 35, engagementScore: 8.7, attendanceRate: 92 },
+        { id: '2', name: 'Afternoon Batch B', totalStudents: 28, engagementScore: 7.9, attendanceRate: 87 },
+        { id: '3', name: 'Evening Batch C', totalStudents: 32, engagementScore: 8.3, attendanceRate: 89 },
+        { id: '4', name: 'Weekend Batch D', totalStudents: 25, engagementScore: 8.9, attendanceRate: 94 },
+    ];
+
+    const currentlyActiveSession = Math.random() > 0.5 ? {
+        id: '123',
+        name: 'Advanced Physics - Quantum Mechanics',
+        status: 'active' as const,
+        startDate: '2025-03-16T09:00:00',
+        endDate: '2025-03-16T11:00:00',
+        attendees: 28,
+        totalStudents: 32
+    } : null;
+
+    return {
+        sessions: {
+            active: 18,
+            new: 7,
+            completed: 45,
+            monthly: monthlyData
+        },
+        subjects: subjects,
+        batches: batches.sort((a, b) => b.engagementScore - a.engagementScore),
+        currentlyActiveSession,
+        totalSubjects: subjects.length,
+        totalConfigs: subjects.reduce((sum, subject) => sum + subject.totalConfigs, 0),
+        totalAttendanceSessions: subjects.reduce((sum, subject) => sum + subject.totalSessions, 0),
+        totalStudents: batches.reduce((sum, batch) => sum + batch.totalStudents, 0),
+        attendanceStudents: Math.floor(batches.reduce((sum, batch) => sum + batch.totalStudents, 0) * 0.85),
+        overallEngagementScore: +(batches.reduce((sum, batch) => sum + batch.engagementScore, 0) / batches.length).toFixed(1),
+        topReviews: [
+            { id: '1', studentName: 'Alex Johnson', batchName: 'Morning Batch A', rating: 5, comment: 'The teaching methodology is excellent! I particularly enjoyed the interactive sessions.', date: '2025-03-14' },
+            { id: '2', studentName: 'Sarah Williams', batchName: 'Weekend Batch D', rating: 5, comment: 'Great course materials and instructor support. The weekend timing works perfectly for me.', date: '2025-03-15' },
+            { id: '3', studentName: 'Michael Chen', batchName: 'Evening Batch C', rating: 4, comment: 'Very informative sessions, but could use more practice problems. Overall a good experience.', date: '2025-03-12' },
+        ]
+    };
+};
+
+// Stat card component (unchanged)
+const StatCard = ({ title, value, icon, color, seeAllLink }: { title: string, value: string | number, icon: React.ReactNode, color: string, seeAllLink?: string }) => {
+    return (
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
+            <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+                <div className={`p-2 rounded-lg ${color}`}>
+                    {icon}
+                </div>
+            </div>
+            <div className="text-2xl font-bold">{value}</div>
+        </div>
+    );
+};
+
+// Top Batches Component (unchanged)
+const TopBatches = ({ batches, seeAllLink }: { batches: Batch[], seeAllLink?: string }) => {
+    return (
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Top Batches</h3>
+            </div>
+            {batches.slice(0, 3).map((batch) => (
+                <div key={batch.id} className="space-y-4 mb-4">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold mr-3">
+                                {batch.name.charAt(0)}
+                            </div>
+                            <div>
+                                <h4 className="font-medium">{batch.name}</h4>
+                                <p className="text-sm text-gray-500">{batch.totalStudents} students</p>
+                            </div>
+                        </div>
+                        <div className="text-2xl font-bold text-indigo-600">{batch.engagementScore}/10</div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Attendance Rate</span>
+                            <span className="font-medium">{batch.attendanceRate}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                                className="bg-indigo-600 h-2 rounded-full"
+                                style={{ width: `${batch.attendanceRate}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+// Engagement Score Component (unchanged)
+const EngagementScore = ({ score, seeAllLink }: { score: number, seeAllLink?: string }) => {
+    return (
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Engagement Score</h3>
+            </div>
+            <div className="text-4xl font-bold text-indigo-600 text-center">{score}</div>
+        </div>
+    );
+};
+
+// Review Score Component
+const ReviewScore = ({ reviews, seeAllLink }: { reviews: Review[], seeAllLink?: string }) => {
+    const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+
+    return (
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-50">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Review Score</h3>
+            </div>
+            <div className="text-4xl font-bold text-indigo-600 text-center">{averageRating.toFixed(1)}/5</div>
+        </div>
+    );
+};
+
+// Dashboard Component
+const Dashboard: React.FC = () => {
+    const [data, setData] = useState<AnalyticsData | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        // Simulate API call
+        setTimeout(() => {
+            setData(generateDummyData());
+            setLoading(false);
+        }, 800);
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+                <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-4 text-lg text-gray-600">Loading dashboard data...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!data) return null;
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <div className="px-4 sm:px-6 lg:px-8 py-8">
+                {/* Active Session Alert (unchanged) */}
+                {data.currentlyActiveSession && (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 shadow-sm mb-8">
+                        <div className="flex flex-wrap gap-4 items-center">
+                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-blue-800">Currently Active Session</h3>
+                                <p className="text-blue-600">
+                                    {data.currentlyActiveSession.name} • {new Date(data.currentlyActiveSession.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(data.currentlyActiveSession.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                            <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-blue-100">
+                                <span className="text-blue-600 font-semibold">{data.currentlyActiveSession.attendees}/{data.currentlyActiveSession.totalStudents}</span>
+                                <span className="text-gray-600 ml-1">students present</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Session Stats (unchanged) */}
+                <div className="mb-8">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Session Statistics</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <StatCard
+                            title="Active Sessions"
+                            value={data.sessions.active}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>}
+                            color="bg-indigo-100"
+                            seeAllLink="/sessions/active"
+                        />
+                        <StatCard
+                            title="New Sessions"
+                            value={data.sessions.new}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>}
+                            color="bg-emerald-100"
+                            seeAllLink="/sessions/new"
+                        />
+                        <StatCard
+                            title="Completed Sessions"
+                            value={data.sessions.completed}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>}
+                            color="bg-amber-100"
+                            seeAllLink="/sessions/completed"
+                        />
+                    </div>
+                </div>
+
+                {/* Main Analytics Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    {/* Left Column - Subject Stats (unchanged) */}
+                    <div className="space-y-8">
+                        <StatCard
+                            title="Total Subjects"
+                            value={data.totalSubjects}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>}
+                            color="bg-indigo-100"
+                            seeAllLink="/subjects"
+                        />
+                        <StatCard
+                            title="Total Configurations"
+                            value={data.totalConfigs}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>}
+                            color="bg-emerald-100"
+                            seeAllLink="/configurations"
+                        />
+                        <StatCard
+                            title="Total Sessions"
+                            value={data.totalAttendanceSessions}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>}
+                            color="bg-amber-100"
+                            seeAllLink="/sessions"
+                        />
+                    </div>
+
+                    {/* Middle Column - Top Batches (unchanged) */}
+                    <TopBatches batches={data.batches} seeAllLink="/batches" />
+
+                    {/* Right Column - Engagement Score and Review Score */}
+                    <div className="space-y-8">
+                        <EngagementScore score={data.overallEngagementScore} seeAllLink="/engagement" />
+                        <ReviewScore reviews={data.topReviews} seeAllLink="/reviews" />
+                    </div>
+                </div>
+
+                {/* Footer (unchanged) */}
+                <div className="mt-12 pt-6 border-t border-gray-200">
+                    <div className="flex flex-col md:flex-row justify-between items-center">
+                        <p className="text-sm text-gray-500 mb-4 md:mb-0">
+                            Last updated: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <div className="flex space-x-4">
+                            <button className="text-sm text-gray-500 hover:text-indigo-600 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Refresh Data
+                            </button>
+                            <button className="text-sm text-gray-500 hover:text-indigo-600 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                                More Options
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Dashboard;

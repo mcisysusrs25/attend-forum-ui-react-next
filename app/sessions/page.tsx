@@ -197,6 +197,7 @@ const getUniqueMonths = () => {
   ];
 
   return [...new Set(months)].sort((a, b) => {
+
     const aMonthIndex = monthNames.indexOf(a);
     const bMonthIndex = monthNames.indexOf(b);
 
@@ -268,257 +269,265 @@ const getUniqueMonths = () => {
 
   return (
     <div className="bg-white shadow-lg rounded-md max-w-full">
-      <div className="px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex space-x-4 mb-8">
-          {/* Filter Buttons */}
-          {['active', ...(userType === 'professor' ? ['new'] : [])].map((status) => (
-            <button
-              key={status}
-              onClick={() => handleFilterChange(status as 'active' | 'new')}
-              className={`px-6 py-2 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm ${filter === status
+  <div className="px-4 sm:px-6 lg:px-8 py-4">
+    {/* Filter, Search, and Month Selection in one row */}
+    <div className="flex flex-wrap items-center gap-4 mb-8">
+      {/* Filter Buttons */}
+      <div className="flex space-x-4">
+        {['active', ...(userType === 'professor' ? ['new'] : [])].map((status) => (
+          <button
+            key={status}
+            onClick={() => handleFilterChange(status as 'active' | 'new')}
+            className={`px-6 py-2 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm ${
+              filter === status
                 ? 'bg-primary text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                }`}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {/* Search Input */}
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder="Search sessions..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-
-        {/* Month Selection Dropdown */}
-        <div className="mb-8">
-          <label className="block text-sm font-medium text-gray-700">Select Months</label>
-          <div className="mt-1">
-            {getUniqueMonths().map(month => (
-              <div key={month} className="flex items-center">
-                <input
-                  type="checkbox"
-                  id={month}
-                  value={month}
-                  checked={selectedMonths.includes(month)}
-                  onChange={() => handleMonthChange(month)}
-                  className="h-4 w-4 text-primary border-gray-300 rounded"
-                />
-                <label htmlFor={month} className="ml-2 text-sm text-gray-700">{month}</label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Display count of filtered sessions */}
-        <div className="mb-8 text-sm text-gray-700">
-          {filteredSessions.length} sessions found
-        </div>
-
-        {/* No sessions message */}
-        {filteredSessions.length === 0 && !loading && (
-          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <div className="text-gray-500 text-lg font-medium">
-              No {filter} sessions found
-            </div>
-          </div>
-        )}
-
-        {/* Session Cards or Skeleton Loading */}
-        {loading ? (
-          <SkeletonLoading />
-        ) : (
-          <div className="space-y-6">
-            {filteredSessions.map((session) => (
-              <div
-              key={session._id}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 cursor-pointer overflow-hidden group h-[250px] flex flex-col justify-between"
-            >
-              <div className="p-5 flex-1">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors duration-300">
-                        {session.sessionTitle}
-                      </h3>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${session.sessionStatus === 'active'
-                          ? 'bg-primary-active text-primary-white border'
-                          : session.sessionStatus === 'completed'
-                            ? 'bg-primary-completed text-primary-white border'
-                            : 'bg-primary-completed text-primary-white border'
-                          }`}
-                      >
-                        {session.sessionStatus}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {session.sessionDescription}
-                    </p>
-                  </div>
-                </div>
-            
-                <div className="mt-4 space-y-2">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-600">
-                        <span className="font-semibold text-gray-700">Subject:</span> {session.subjectCode}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-semibold text-gray-700">Instructor:</span> {session.createdBy}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-600">
-                        <span className="font-semibold text-gray-700">Starts:</span> {new Date(session.sessionValidFrom).toLocaleDateString()}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-semibold text-gray-700">Ends:</span> {new Date(session.sessionValidTo).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            
-              <div className="border-t border-gray-100 p-4">
-                <div className="flex items-center justify-end gap-2">
-                  {userType === 'professor' && (
-                    <>
-                      {session.sessionStatus === 'new' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`sessions/update-session/${session.sessionID}`);
-                          }}
-                          className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
-                        >
-                          Edit
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteClick(session);
-                        }}
-                        className="px-4 py-2 border border-gray-300 text-priary rounded-lg text-sm font-medium"
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusChange(session.sessionID, session.sessionStatus === 'active' ? 'completed' : 'active');
-                        }}
-                        className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
-                      >
-                        {session.sessionStatus === 'active' ? 'Complete' : 'Activate'}
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          copyLinkToClipboard(session.sessionID);
-                        }}
-                        className="px-4 py-2 border border-gray-200 cursor-pointer text-primary rounded-lg text-sm font-medium"
-                      >
-                        Copy Link
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openQRModal(session.sessionID);
-                    }}
-                    className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
-                  >
-                    Show QR
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/sessions/${session.sessionID}`);
-                    }}
-                    className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
-                  >
-                    Details
-                  </button>
-                </div>
-              </div>
-            </div>
-            ))}
-          </div>
-        )}
+            }`}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </button>
+        ))}
       </div>
+      
+      {/* Search Input */}
+      <div className="flex-grow">
+        <input
+          type="text"
+          placeholder="Search sessions..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
+      
+      {/* Month Selection Dropdown */}
+     
+    </div>
 
-      {showQRModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-50">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl">
-            {/* Header */}
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Attendance QR Code</h2>
-                  <p className="text-gray-500 mt-1">Scan to mark your attendance</p>
+
+{/* Month Selection as a single row */}
+<div className="mb-8">
+      <label className="block text-sm font-medium text-gray-700 mb-2">Select Months</label>
+      <div className="flex flex-wrap gap-2">
+        {getUniqueMonths().map(month => (
+          <div key={month} className="flex items-center">
+            <input
+              type="checkbox"
+              id={month}
+              value={month}
+              checked={selectedMonths.includes(month)}
+              onChange={() => handleMonthChange(month)}
+              className="h-4 w-4 text-primary border-gray-300 rounded"
+            />
+            <label htmlFor={month} className="ml-2 text-sm text-gray-700">{month}</label>
+          </div>
+        ))}
+      </div>
+    </div>
+    {/* Display count of filtered sessions */}
+    <div className="mb-8 text-sm text-gray-700">
+      {filteredSessions.length} sessions found
+    </div>
+
+    {/* No sessions message */}
+    {filteredSessions.length === 0 && !loading && (
+      <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="text-gray-500 text-lg font-medium">
+          No {filter} sessions found
+        </div>
+      </div>
+    )}
+
+    {/* Session Cards or Skeleton Loading */}
+    {loading ? (
+      <SkeletonLoading />
+    ) : (
+      <div className="space-y-6">
+        {filteredSessions.map((session) => (
+          <div
+          key={session._id}
+          className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 cursor-pointer overflow-hidden group h-[250px] flex flex-col justify-between"
+        >
+          <div className="p-5 flex-1">
+            <div className="flex justify-between items-start">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors duration-300">
+                    {session.sessionTitle}
+                  </h3>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      session.sessionStatus === 'active'
+                        ? 'bg-primary-active text-primary-white border'
+                        : session.sessionStatus === 'completed'
+                          ? 'bg-primary-completed text-primary-white border'
+                          : 'bg-primary-completed text-primary-white border'
+                    }`}
+                  >
+                    {session.sessionStatus}
+                  </span>
                 </div>
+                <p className="text-sm text-gray-600 line-clamp-2">
+                  {session.sessionDescription}
+                </p>
               </div>
             </div>
-
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {/* QR Code Container */}
-              <div className="flex justify-center">
-                <div className="bg-white p-4 rounded-xl shadow-inner border-2 border-dashed border-gray-200">
-                  {qrCodeDataUrl && (
-                    <Image
-                      src={qrCodeDataUrl}
-                      alt="QR Code"
-                      width={400}
-                      height={400}
-                      className="object-contain"
-                    />
-                  )}
+        
+            <div className="mt-4 space-y-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-semibold text-gray-700">Subject:</span> {session.subjectCode}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-semibold text-gray-700">Instructor:</span> {session.createdBy}
+                  </p>
                 </div>
-              </div>
-
-              {/* Button */}
-              <div className="flex justify-end pt-4">
-                <button
-                  onClick={() => setShowQRModal(false)}
-                  className="px-6 py-2.5 bg-primary text-white rounded-lg transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                >
-                  Close
-                </button>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-semibold text-gray-700">Starts:</span> {new Date(session.sessionValidFrom).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-semibold text-gray-700">Ends:</span> {new Date(session.sessionValidTo).toLocaleDateString()}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
+        
+          <div className="border-t border-gray-100 p-4">
+            <div className="flex items-center justify-end gap-2">
+              {userType === 'professor' && (
+                <>
+                  {session.sessionStatus === 'new' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`sessions/update-session/${session.sessionID}`);
+                      }}
+                      className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
+                    >
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(session);
+                    }}
+                    className="px-4 py-2 border border-gray-300 text-priary rounded-lg text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStatusChange(session.sessionID, session.sessionStatus === 'active' ? 'completed' : 'active');
+                    }}
+                    className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
+                  >
+                    {session.sessionStatus === 'active' ? 'Complete' : 'Activate'}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyLinkToClipboard(session.sessionID);
+                    }}
+                    className="px-4 py-2 border border-gray-200 cursor-pointer text-primary rounded-lg text-sm font-medium"
+                  >
+                    Copy Link
+                  </button>
+                </>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openQRModal(session.sessionID);
+                }}
+                className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
+              >
+                Show QR
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/sessions/${session.sessionID}`);
+                }}
+                className="px-4 py-2 border border-gray-300 text-primary rounded-lg text-sm font-medium"
+              >
+                Details
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+        ))}
+      </div>
+    )}
+  </div>
+
+  {showQRModal && (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-50">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Attendance QR Code</h2>
+              <p className="text-gray-500 mt-1">Scan to mark your attendance</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* QR Code Container */}
+          <div className="flex justify-center">
+            <div className="bg-white p-4 rounded-xl shadow-inner border-2 border-dashed border-gray-200">
+              {qrCodeDataUrl && (
+                <Image
+                  src={qrCodeDataUrl}
+                  alt="QR Code"
+                  width={400}
+                  height={400}
+                  className="object-contain"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Button */}
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={() => setShowQRModal(false)}
+              className="px-6 py-2.5 bg-primary text-white rounded-lg transition-colors duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+  )}
+</div>
   );
 }

@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 
 // Define navigation items with icons for professors and students
 const professorNavigation = [
+  // { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboardIcon },
   { name: 'Sessions', href: '/sessions', icon: CalendarIcon },
   { name: 'Subjects', href: '/subjects', icon: BookOpenIcon },
   { name: 'Batches', href: '/batches', icon: UserGroupIcon },
