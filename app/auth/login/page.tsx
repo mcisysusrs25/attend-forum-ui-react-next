@@ -215,7 +215,7 @@ const AuthPage = () => {
           </p>
           <div className="mt-12 p-6 bg-white/10 backdrop-blur-sm rounded-xl">
             <blockquote className="text-white italic">
-              "Education is the passport to the future, for tomorrow belongs to those who prepare for it today."
+              Education is the passport to the future, for tomorrow belongs to those who prepare for it today.
             </blockquote>
             <p className="text-indigo-200 mt-4">— Malcolm X</p>
           </div>

@@ -5,19 +5,6 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// Define TypeScript interfaces for props
-interface FeatureCardProps {
-  icon: string;
-  title: string;
-  description: string;
-}
-
-interface StepCardProps {
-  number: string;
-  title: string;
-  description: string;
-}
-
 interface TestimonialProps {
   quote: string;
   author: string;
@@ -59,19 +46,6 @@ const LandingPage = () => {
       image: "/logo.svg"
     }
   ];
-
-  const fadeInUpVariant = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    })
-  };
 
   return (
     <div className="bg-gradient-to-b from-indigo-50 via-white to-white">
